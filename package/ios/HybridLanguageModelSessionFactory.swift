@@ -18,7 +18,7 @@ class HybridLanguageModelSessionFactory: HybridLanguageModelSessionFactorySpec {
         if #available(iOS 26.0, *) {
             return try HybridLanguageModelSession(config: config)
         } else {
-            throw NSError(domain: "RNAppleAI.FoundationModels", code: 1001, userInfo: [
+            throw NSError(domain: "RNAppleIntelligence.FoundationModels", code: 1001, userInfo: [
                 NSLocalizedDescriptionKey: "Apple Foundation Models requires iOS 26.0 or later"
             ])
         }

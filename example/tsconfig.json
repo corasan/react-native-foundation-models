@@ -6,7 +6,7 @@
       "@/*": [
         "./*"
       ],
-      "react-native-apple-ai": [
+      "react-native-apple-intelligence": [
         "../package/src/index"
       ]
     }

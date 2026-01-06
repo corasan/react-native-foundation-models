@@ -17,11 +17,11 @@ React Native Apple AI is a Nitro module that provides access to Apple's Foundati
 ## Installation
 
 ```bash
-npm install react-native-apple-ai
+npm install react-native-apple-intelligence
 # or
-yarn add react-native-apple-ai
+yarn add react-native-apple-intelligence
 # or
-bun add react-native-apple-ai
+bun add react-native-apple-intelligence
 ```
 
 ### iOS Setup
@@ -31,7 +31,7 @@ No additional setup is required for iOS. The module will automatically detect Ap
 ## Quick Start
 
 ```typescript
-import { useLanguageModel } from 'react-native-apple-ai';
+import { useLanguageModel } from 'react-native-apple-intelligence';
 
 function MyComponent() {
   const { session, send, loading, isSessionReady, error } = useLanguageModel({

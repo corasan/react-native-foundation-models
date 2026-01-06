@@ -1,4 +1,4 @@
-# react-native-apple-ai
+# react-native-apple-intelligence
 
 React Native Nitro module for Apple's Foundation Models (Apple Intelligence). Enables AI capabilities in React Native applications using Apple's on-device model, with tool calling support and streaming responses on iOS 26.0+.
 
@@ -12,9 +12,9 @@ React Native Nitro module for Apple's Foundation Models (Apple Intelligence). En
 ## Installation
 
 ```sh
-npm install react-native-apple-ai react-native-nitro-modules
-yarn add react-native-apple-ai react-native-nitro-modules
-bun add react-native-apple-ai react-native-nitro-modules
+npm install react-native-apple-intelligence react-native-nitro-modules
+yarn add react-native-apple-intelligence react-native-nitro-modules
+bun add react-native-apple-intelligence react-native-nitro-modules
 ```
 
 ## Usage
@@ -22,7 +22,7 @@ bun add react-native-apple-ai react-native-nitro-modules
 ### Basic Chat Session
 
 ```typescript
-import { LanguageModelSession } from 'react-native-apple-ai';
+import { LanguageModelSession } from 'react-native-apple-intelligence';
 
 const session = new LanguageModelSession({
   instructions: 'You are a helpful assistant'
@@ -37,7 +37,7 @@ await session.streamResponse('Hello, how are you?', (response) => {
 ### Using React Hooks
 
 ```typescript
-import { useLanguageModel } from 'react-native-apple-ai';
+import { useLanguageModel } from 'react-native-apple-intelligence';
 
 function ChatComponent() {
   const { send, response, loading, error, isSessionReady } = useLanguageModel({
@@ -64,7 +64,7 @@ function ChatComponent() {
 ### Tool calling
 
 ```typescript
-import { createTool, LanguageModelSession } from 'react-native-apple-ai';
+import { createTool, LanguageModelSession } from 'react-native-apple-intelligence';
 import { z } from 'zod';
 
 const weatherTool = createTool({

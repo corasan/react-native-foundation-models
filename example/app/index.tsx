@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { createTool, LanguageModelSession } from 'react-native-apple-ai'
+import { createTool, LanguageModelSession } from 'react-native-apple-intelligence'
 import { z } from 'zod'
 import { WeatherDemo } from '@/components/WeatherDemo'
 import { weatherResult } from '@/utils/weatherResult'
