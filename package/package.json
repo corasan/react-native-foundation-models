@@ -14,7 +14,8 @@
     "build": "rm -rf lib && bun typecheck && bob build",
     "specs": "bunx nitrogen --logLevel=\"debug\"",
     "generate": "node lib/commonjs/cli.js",
-    "generate:dev": "ts-node src/cli.ts"
+    "generate:dev": "ts-node src/cli.ts",
+    "release": "release-it"
   },
   "keywords": [
     "react-native",
