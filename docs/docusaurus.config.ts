@@ -16,9 +16,9 @@ const config: Config = {
 
   // Set the production url of your site here
   url: 'https://corasan.github.io',
-  baseUrl: '/react-native-apple-ai/',
+  baseUrl: '/react-native-apple-intelligence/',
   organizationName: 'corasan',
-  projectName: 'react-native-apple-ai',
+  projectName: 'react-native-apple-intelligence',
   deploymentBranch: 'gh-pages',
 
   onBrokenLinks: 'throw',
@@ -39,7 +39,7 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
           editUrl:
-            'https://github.com/corasan/react-native-apple-ai/tree/main/docs/',
+            'https://github.com/corasan/react-native-apple-intelligence/tree/main/docs/',
         },
         blog: false,
         theme: {
@@ -56,7 +56,7 @@ const config: Config = {
       title: 'React Native Apple AI',
       logo: {
         alt: 'React Native Apple AI Logo',
-        src: 'img/rn-apple-ai.png',
+        src: 'img/rn-apple-intelligence.png',
       },
       items: [
         {
@@ -66,7 +66,7 @@ const config: Config = {
           label: 'Docs',
         },
         {
-          href: 'https://github.com/corasan/react-native-apple-ai',
+          href: 'https://github.com/corasan/react-native-apple-intelligence',
           label: 'GitHub',
           position: 'right',
         },
@@ -89,7 +89,7 @@ const config: Config = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/corasan/react-native-apple-ai',
+              href: 'https://github.com/corasan/react-native-apple-intelligence',
             },
           ],
         },

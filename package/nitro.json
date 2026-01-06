@@ -1,16 +1,16 @@
 {
   "$schema": "https://nitro.margelo.com/nitro.schema.json",
   "cxxNamespace": [
-    "rnappleai"
+    "rnappleintelligence"
   ],
   "ios": {
-    "iosModuleName": "RNAppleAI"
+    "iosModuleName": "RNAppleIntelligence"
   },
   "android": {
     "androidNamespace": [
-      "rnappleai"
+      "RNAppleIntelligence"
     ],
-    "androidCxxLibName": "RNAppleAI"
+    "androidCxxLibName": "RNAppleIntelligence"
   },
   "autolinking": {
     "LanguageModelSessionFactory": {

@@ -1,5 +1,5 @@
 {
-  "name": "react-native-apple-ai",
+  "name": "react-native-apple-intelligence",
   "version": "0.1.0",
   "description": "A React Native Nitro module",
   "main": "./lib/module/index.js",
@@ -22,11 +22,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/corasan/react-native-apple-ai.git"
+    "url": "https://github.com/corasan/react-native-apple-intelligence.git"
   },
   "license": "MIT",
-  "bugs": "https://github.com/corasan/react-native-apple-ai/issues",
-  "homepage": "https://github.com/corasan/react-native-apple-ai#readme",
+  "bugs": "https://github.com/corasan/react-native-apple-intelligence/issues",
+  "homepage": "https://github.com/corasan/react-native-apple-intelligence#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
@@ -52,19 +52,68 @@
     "README.md"
   ],
   "dependencies": {
-    "zod": "^3.23.8"
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@release-it/bumper": "^7.0.5",
+    "@release-it/conventional-changelog": "^10.0.1",
+    "nitrogen": "^0.32.0",
+    "react-native-builder-bob": "^0.40.13",
+    "release-it": "^19.0.4",
+    "ts-node": "^10.9.2"
   },
   "peerDependencies": {
     "react": "*",
     "react-native": "*",
     "react-native-nitro-modules": "*"
   },
-  "devDependencies": {
-    "@expo/config-plugins": "^54.0.1",
-    "@types/react": "*",
-    "nitrogen": "^0.29.6",
-    "react-native-builder-bob": "^0.40.13",
-    "ts-node": "^10.9.2"
+  "release-it": {
+    "npm": {
+      "publish": true,
+      "skipVersion": true
+    },
+    "github": {
+      "release": true,
+      "releaseName": "v${version}"
+    },
+    "hooks": {
+      "after:bump": "bun specs",
+      "before:release": "bun run build"
+    },
+    "git": {
+      "commitMessage": "chore: release ${version}",
+      "tagName": "v${version}",
+      "requireCleanWorkingDir": false
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "preset": {
+          "name": "conventionalcommits",
+          "types": [
+            {
+              "type": "feat",
+              "section": "✨ Features"
+            },
+            {
+              "type": "fix",
+              "section": "🐞 Fixes"
+            },
+            {
+              "type": "chore(deps)",
+              "section": "🛠️ Dependency Upgrades"
+            },
+            {
+              "type": "perf",
+              "section": "🏎️ Performance Improvements"
+            },
+            {
+              "type": "docs",
+              "section": "📚 Documentation"
+            }
+          ]
+        }
+      }
+    }
   },
   "react-native-builder-bob": {
     "source": "src",

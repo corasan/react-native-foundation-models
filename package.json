@@ -1,5 +1,5 @@
 {
-  "name": "react-native-apple-ai",
+  "name": "react-native-apple-intelligence",
   "version": "0.1.0",
   "description": "Nitro module workspace",
   "main": "./package/lib/module/index.js",
@@ -14,7 +14,7 @@
     "specs": "bun --cwd ./package specs",
     "specs:pod": "bun --cwd ./package specs && cd example/ios && pod install && cd ../../",
     "build": "bun --cwd package build",
-    "release": "release-it",
+    "release": "bun --cwd package release",
     "prebuild:ios": "bunx --cwd ./example expo prebuild -p ios",
     "docs:dev": "bun --cwd docs start",
     "docs:build": "bun --cwd docs build",
@@ -29,82 +29,8 @@
     "example",
     "docs"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Developer/react-native-apple-ai.git"
-  },
-  "license": "MIT",
-  "bugs": "https://github.com/Developer/react-native-apple-ai/issues",
-  "homepage": "https://github.com/Developer/react-native-apple-ai#readme",
   "devDependencies": {
     "@biomejs/biome": "^2.0.6",
-    "@release-it-plugins/workspaces": "^5.0.3",
-    "@release-it/bumper": "^7.0.5",
-    "@release-it/conventional-changelog": "^10.0.1",
-    "release-it": "^19.0.4",
     "typescript": "^5.7.3"
-  },
-  "release-it": {
-    "npm": {
-      "publish": false,
-      "versionArgs": [
-        "--allow-same-version"
-      ]
-    },
-    "github": {
-      "release": true,
-      "releaseName": "${version}"
-    },
-    "hooks": {
-      "after:bump": "bun specs",
-      "before:release": "bun run build"
-    },
-    "git": {
-      "commitMessage": "chore: release ${version}",
-      "tagName": "v${version}",
-      "requireCleanWorkingDir": false
-    },
-    "plugins": {
-      "@release-it/bumper": {
-        "out": [
-          {
-            "file": "package/package.json",
-            "path": "version"
-          },
-          {
-            "file": "example/package.json",
-            "path": "version"
-          }
-        ]
-      },
-      "@release-it-plugins/workspaces": true,
-      "@release-it/conventional-changelog": {
-        "preset": {
-          "name": "conventionalcommits",
-          "types": [
-            {
-              "type": "feat",
-              "section": "✨ Features"
-            },
-            {
-              "type": "fix",
-              "section": "🐞 Fixes"
-            },
-            {
-              "type": "chore(deps)",
-              "section": "🛠️ Dependency Upgrades"
-            },
-            {
-              "type": "perf",
-              "section": "🏎️ Performance Improvements"
-            },
-            {
-              "type": "docs",
-              "section": "📚 Documentation"
-            }
-          ]
-        }
-      }
-    }
   }
 }
