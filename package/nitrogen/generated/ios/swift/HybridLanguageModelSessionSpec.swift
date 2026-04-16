@@ -13,6 +13,7 @@ public protocol HybridLanguageModelSessionSpec_protocol: HybridObject {
   var wasContextReset: Bool { get }
 
   // Methods
+  func respond(prompt: String) throws -> Promise<String>
   func streamResponse(prompt: String, onStream: @escaping (_ stream: String) -> Void) throws -> Promise<String>
 }
 

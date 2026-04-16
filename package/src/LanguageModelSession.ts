@@ -103,6 +103,13 @@ export class LanguageModelSession {
   }
 
   /**
+   * Generates a complete response from the language model and resolves when finished.
+   */
+  respond(prompt: string): Promise<string> {
+    return this.session.respond(prompt)
+  }
+
+  /**
    * Initiates a streaming response from the language model
    * This method starts the AI conversation and streams the response back
    */

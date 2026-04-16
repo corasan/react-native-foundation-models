@@ -14,7 +14,10 @@
   },
   "autolinking": {
     "LanguageModelSessionFactory": {
-      "swift": "HybridLanguageModelSessionFactory"
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "HybridLanguageModelSessionFactory"
+      }
     }
   },
   "ignorePaths": [

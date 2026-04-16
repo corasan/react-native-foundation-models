@@ -28,7 +28,19 @@ const session = new LanguageModelSession({
   instructions: 'You are a helpful assistant'
 });
 
-// Stream updates
+const response = await session.respond('Hello, how are you?');
+console.log('Response:', response);
+```
+
+### Streaming Chat Session
+
+```typescript
+import { LanguageModelSession } from 'react-native-foundation-models';
+
+const session = new LanguageModelSession({
+  instructions: 'You are a helpful assistant'
+});
+
 await session.streamResponse('Hello, how are you?', (responseSoFar) => {
   console.log('Streaming response:', responseSoFar);
 });
@@ -98,6 +110,10 @@ constructor(config?: {
   tools?: Tool[];
 })
 ```
+
+Methods:
+- `respond(prompt)` - Generate a complete response and resolve when finished
+- `streamResponse(prompt, onChunk)` - Stream the response progressively
 
 ### `useLanguageModel(config)`
 

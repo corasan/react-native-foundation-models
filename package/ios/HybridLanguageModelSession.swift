@@ -47,6 +47,42 @@ class HybridLanguageModelSession: HybridLanguageModelSessionSpec {
     }
     
     /**
+     * Generates a non-streaming response and resolves with the final content.
+     */
+    @available(iOS 26.0, *)
+    func respond(prompt: String) throws -> Promise<String> {
+        return Promise.async {
+            guard let modelSession = self.session else {
+                throw AppleAIError.sessionNotInitialized
+            }
+
+            guard !prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                return ""
+            }
+
+            self.isResponding = true
+
+            do {
+                let result = try await modelSession.respond(to: prompt)
+                self.isResponding = false
+                return result.content
+            } catch LanguageModelSession.GenerationError.exceededContextWindowSize {
+                self.isResponding = false
+                let newSession = try await self.createNewSessionWithSummary(previousSession: modelSession)
+                self.session = newSession
+                self.contextWasReset = true
+                throw AppleAIError.contextExceeded
+            } catch let error as AppleAIError {
+                self.isResponding = false
+                throw error
+            } catch {
+                self.isResponding = false
+                throw AppleAIError.sessionStreamingError(error)
+            }
+        }
+    }
+
+    /**
      * Implements the streaming response functionality required by the Nitro interface.
      * This method bridges the FoundationModels streaming API with the Nitro callback system.
      */

@@ -20,6 +20,17 @@ constructor(config?: LanguageModelSessionConfig)
 
 ### Instance Methods
 
+#### `respond(prompt)`
+
+Generates a complete response from the language model.
+
+```typescript
+respond(prompt: string): Promise<string>
+```
+
+**Parameters**:
+- `prompt: string` - The user's message
+
 #### `streamResponse(prompt, callback)`
 
 Initiates a streaming response from the language model.

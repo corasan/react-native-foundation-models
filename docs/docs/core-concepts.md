@@ -21,6 +21,15 @@ const session = new LanguageModelSession({
 });
 ```
 
+## Regular Responses
+
+Use `respond()` when you want the full answer only after generation finishes:
+
+```typescript
+const response = await session.respond("What is quantum computing?");
+console.log(response);
+```
+
 ## Apple Intelligence Availability
 
 Before using the module, check if Apple Intelligence is available:
