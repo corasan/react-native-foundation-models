@@ -69,8 +69,8 @@ const weatherTool = createTool({
 Handle real-time AI responses as they're generated:
 
 ```typescript
-session.streamResponse("Tell me a story", (fullResponse: string) => {
-  console.log(fullResponse); // Gets called with the complete response so far
+session.streamResponse("Tell me a story", (chunk: string) => {
+  console.log(chunk); // Gets called with each streamed chunk
 });
 ```
 
@@ -82,8 +82,8 @@ The module provides specific error types for different failure scenarios:
 import { AppleAIError, isAppleAIError } from 'react-native-foundation-models';
 
 try {
-  await session.streamResponse("Hello", (response) => {
-    console.log(response);
+  await session.streamResponse("Hello", (chunk) => {
+    console.log(chunk);
   });
 } catch (error) {
   if (isAppleAIError(error)) {

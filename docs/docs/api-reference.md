@@ -25,12 +25,12 @@ constructor(config?: LanguageModelSessionConfig)
 Initiates a streaming response from the language model.
 
 ```typescript
-streamResponse(prompt: string, callback: (fullResponse: string) => void): void
+streamResponse(prompt: string, onChunk: (chunk: string) => void): Promise<string>
 ```
 
 **Parameters**:
 - `prompt: string` - The user's message
-- `callback: (fullResponse: string) => void` - Called with the complete response so far
+- `onChunk: (chunk: string) => void` - Called with each streamed chunk
 
 ## Functions
 

@@ -29,8 +29,8 @@ const session = new LanguageModelSession({
 });
 
 // Stream responses
-await session.streamResponse('Hello, how are you?', (response) => {
-  console.log('Streaming response:', response);
+await session.streamResponse('Hello, how are you?', (chunk) => {
+  console.log('Streaming chunk:', chunk);
 });
 ```
 
