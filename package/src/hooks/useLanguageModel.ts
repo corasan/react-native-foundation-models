@@ -45,7 +45,7 @@ export interface UseLanguageModelReturn {
  *   onResponse: (response) => console.log('Got response:', response),
  *   onError: (error) => console.error('Error:', error)
  * })
- * 
+ *
  * const handleSend = async () => {
  *   try {
  *     await send('What is the weather like?')
@@ -55,7 +55,9 @@ export interface UseLanguageModelReturn {
  * }
  * ```
  */
-export function useLanguageModel(config?: UseLanguageModelConfig): UseLanguageModelReturn {
+export function useLanguageModel(
+  config?: UseLanguageModelConfig,
+): UseLanguageModelReturn {
   const [session, setSession] = useState<LanguageModelSession | null>(null)
   const [response, setResponse] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
@@ -68,7 +70,7 @@ export function useLanguageModel(config?: UseLanguageModelConfig): UseLanguageMo
   // Store callback refs to avoid dependency issues
   const onErrorRef = useRef(config?.onError)
   const onResponseRef = useRef(config?.onResponse)
-  
+
   // Update refs when callbacks change
   useEffect(() => {
     onErrorRef.current = config?.onError
@@ -78,10 +80,10 @@ export function useLanguageModel(config?: UseLanguageModelConfig): UseLanguageMo
   // Create session config object, memoized to prevent unnecessary recreations
   const sessionConfig = useMemo((): LanguageModelSessionConfig | undefined => {
     if (!config?.instructions && !config?.tools) return undefined
-    
+
     return {
       instructions: config.instructions,
-      tools: config.tools
+      tools: config.tools,
     }
   }, [config?.instructions, config?.tools])
 
@@ -117,7 +119,9 @@ export function useLanguageModel(config?: UseLanguageModelConfig): UseLanguageMo
       }
 
       if (loading) {
-        const error = parseNativeError(new Error('Another request is already in progress'))
+        const error = parseNativeError(
+          new Error('Another request is already in progress'),
+        )
         setError(error)
         onErrorRef.current?.(error)
         throw error
@@ -133,10 +137,10 @@ export function useLanguageModel(config?: UseLanguageModelConfig): UseLanguageMo
           prompt,
           (fullResponse: string) => {
             if (isCancelledRef.current) return
-            
+
             setResponse(fullResponse)
             onResponseRef.current?.(fullResponse)
-          }
+          },
         )
 
         activeStreamRef.current = streamPromise
@@ -159,7 +163,7 @@ export function useLanguageModel(config?: UseLanguageModelConfig): UseLanguageMo
         throw appleAIError
       }
     },
-    [session, loading, sessionError]
+    [session, loading, sessionError],
   )
 
   const reset = useCallback(() => {
@@ -179,6 +183,6 @@ export function useLanguageModel(config?: UseLanguageModelConfig): UseLanguageMo
     error: error || sessionError,
     send,
     reset,
-    isSessionReady
+    isSessionReady,
   }
 }

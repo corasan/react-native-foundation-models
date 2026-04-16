@@ -5,8 +5,8 @@ import type * as Preset from '@docusaurus/preset-classic';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'React Native Apple AI',
-  tagline: 'Apple Intelligence for React Native',
+  title: 'React Native Foundation Models',
+  tagline: 'Foundation Models for React Native',
   favicon: 'img/favicon.ico',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
@@ -16,9 +16,9 @@ const config: Config = {
 
   // Set the production url of your site here
   url: 'https://corasan.github.io',
-  baseUrl: '/react-native-apple-intelligence/',
+  baseUrl: '/react-native-foundation-models/',
   organizationName: 'corasan',
-  projectName: 'react-native-apple-intelligence',
+  projectName: 'react-native-foundation-models',
   deploymentBranch: 'gh-pages',
 
   onBrokenLinks: 'throw',
@@ -39,7 +39,7 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
           editUrl:
-            'https://github.com/corasan/react-native-apple-intelligence/tree/main/docs/',
+            'https://github.com/corasan/react-native-foundation-models/tree/main/docs/',
         },
         blog: false,
         theme: {
@@ -53,10 +53,10 @@ const config: Config = {
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
     navbar: {
-      title: 'React Native Apple AI',
+      title: 'React Native Foundation Models',
       logo: {
-        alt: 'React Native Apple AI Logo',
-        src: 'img/rn-apple-intelligence.png',
+        alt: 'React Native Foundation Models Logo',
+        src: 'img/rn-apple-ai.png',
       },
       items: [
         {
@@ -66,7 +66,7 @@ const config: Config = {
           label: 'Docs',
         },
         {
-          href: 'https://github.com/corasan/react-native-apple-intelligence',
+          href: 'https://github.com/corasan/react-native-foundation-models',
           label: 'GitHub',
           position: 'right',
         },
@@ -89,12 +89,12 @@ const config: Config = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/corasan/react-native-apple-intelligence',
+              href: 'https://github.com/corasan/react-native-foundation-models',
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} React Native Apple AI. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} React Native Foundation Models. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,

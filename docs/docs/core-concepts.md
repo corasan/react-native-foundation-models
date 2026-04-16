@@ -13,7 +13,7 @@ The `LanguageModelSession` is the core class that manages AI conversations. Each
 - **Streaming**: Real-time response handling
 
 ```typescript
-import { LanguageModelSession } from 'react-native-apple-intelligence';
+import { LanguageModelSession } from 'react-native-foundation-models';
 
 const session = new LanguageModelSession({
   instructions: "You are a helpful coding assistant.",
@@ -26,7 +26,7 @@ const session = new LanguageModelSession({
 Before using the module, check if Apple Intelligence is available:
 
 ```typescript
-import { checkFoundationModelsAvailability } from 'react-native-apple-intelligence';
+import { checkFoundationModelsAvailability } from 'react-native-foundation-models';
 
 const availability = checkFoundationModelsAvailability();
 console.log(availability.status); // 'available' or 'unavailable.xxx'
@@ -48,7 +48,7 @@ Define custom tools that the AI can invoke during conversations:
 
 ```typescript
 import { z } from 'zod';
-import { createTool } from 'react-native-apple-intelligence';
+import { createTool } from 'react-native-foundation-models';
 
 const weatherTool = createTool({
   name: 'get_weather',
@@ -79,7 +79,7 @@ session.streamResponse("Tell me a story", (fullResponse: string) => {
 The module provides specific error types for different failure scenarios:
 
 ```typescript
-import { AppleAIError, isAppleAIError } from 'react-native-apple-intelligence';
+import { AppleAIError, isAppleAIError } from 'react-native-foundation-models';
 
 try {
   await session.streamResponse("Hello", (response) => {
