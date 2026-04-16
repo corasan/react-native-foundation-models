@@ -50,6 +50,7 @@ namespace margelo::nitro::rnfoundationmodels {
 
     public:
       // Methods
+      virtual std::shared_ptr<Promise<std::string>> respond(const std::string& prompt) = 0;
       virtual std::shared_ptr<Promise<std::string>> streamResponse(const std::string& prompt, const std::function<void(const std::string& /* stream */)>& onStream) = 0;
 
     protected:

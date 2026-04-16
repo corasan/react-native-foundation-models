@@ -237,7 +237,7 @@ export default function StreamingChat() {
 
     try {
       await streamResponse(currentInput, {
-        onToken: (token) => {
+        onToken: (chunk) => {
           // Response is automatically updated via the hook
         },
         onComplete: (fullResponse) => {

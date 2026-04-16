@@ -133,20 +133,13 @@ export function useLanguageModel(
         setResponse('')
         isCancelledRef.current = false
 
-        const streamPromise = session.session.streamResponse(
-          prompt,
-          (fullResponse: string) => {
-            if (isCancelledRef.current) return
-
-            setResponse(fullResponse)
-            onResponseRef.current?.(fullResponse)
-          },
-        )
-
-        activeStreamRef.current = streamPromise
-        const fullResponse = await streamPromise
+        const responsePromise = session.respond(prompt)
+        activeStreamRef.current = responsePromise
+        const fullResponse = await responsePromise
 
         if (!isCancelledRef.current) {
+          setResponse(fullResponse)
+          onResponseRef.current?.(fullResponse)
           setLoading(false)
         }
 

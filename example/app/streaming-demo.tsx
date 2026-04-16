@@ -45,8 +45,7 @@ const weatherTool = createTool({
 })
 
 const session = new LanguageModelSession({
-  instructions:
-    'You are a helpful assistant. When users ask about weather, use the weather tool to get current information.',
+  instructions: 'You are a helpful assistant',
   tools: [weatherTool],
 })
 

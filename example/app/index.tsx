@@ -48,11 +48,10 @@ export default function IndexScreen() {
     setResult('')
 
     try {
-      await session.streamResponse(prompt, token => {
-        setResult(token)
-      })
+      const fullResponse = await session.respond(prompt)
+      setResult(fullResponse)
     } catch (error) {
-      console.error('Failed to stream response:', error)
+      console.error('Failed to get response:', error)
       setResult('Error: Failed to get response')
     } finally {
       setLoading(false)

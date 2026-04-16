@@ -68,13 +68,13 @@ export function useStreamingResponse(
         setResponse('')
         isCancelledRef.current = false
 
-        const streamPromise = session.session.streamResponse(
+        const streamPromise = session.streamResponse(
           prompt,
-          (fullResponse: string) => {
+          (streamedResponse: string) => {
             if (isCancelledRef.current) return
 
-            setResponse(fullResponse)
-            options?.onToken?.(fullResponse)
+            setResponse(streamedResponse)
+            options?.onToken?.(streamedResponse)
           },
         )
 

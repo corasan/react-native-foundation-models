@@ -38,8 +38,7 @@ const tools = [weatherTool]
 
 export default function HookDemoScreen() {
   const { response, loading, error, send, reset, isSessionReady } = useLanguageModel({
-    instructions:
-      'You are a helpful weather assistant. Always provide detailed and friendly weather information.',
+    instructions: 'You are a helpful assistant',
     tools,
   })
 

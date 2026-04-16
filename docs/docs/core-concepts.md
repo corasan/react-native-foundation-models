@@ -21,6 +21,15 @@ const session = new LanguageModelSession({
 });
 ```
 
+## Regular Responses
+
+Use `respond()` when you want the full answer only after generation finishes:
+
+```typescript
+const response = await session.respond("What is quantum computing?");
+console.log(response);
+```
+
 ## Apple Intelligence Availability
 
 Before using the module, check if Apple Intelligence is available:
@@ -69,8 +78,8 @@ const weatherTool = createTool({
 Handle real-time AI responses as they're generated:
 
 ```typescript
-session.streamResponse("Tell me a story", (fullResponse: string) => {
-  console.log(fullResponse); // Gets called with the complete response so far
+session.streamResponse("Tell me a story", (responseSoFar: string) => {
+  console.log(responseSoFar); // Gets called with the full streamed response so far
 });
 ```
 
@@ -82,8 +91,8 @@ The module provides specific error types for different failure scenarios:
 import { AppleAIError, isAppleAIError } from 'react-native-foundation-models';
 
 try {
-  await session.streamResponse("Hello", (response) => {
-    console.log(response);
+  await session.streamResponse("Hello", (responseSoFar) => {
+    console.log(responseSoFar);
   });
 } catch (error) {
   if (isAppleAIError(error)) {

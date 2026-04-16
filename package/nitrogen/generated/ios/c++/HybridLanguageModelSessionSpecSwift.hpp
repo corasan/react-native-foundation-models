@@ -70,6 +70,14 @@ namespace margelo::nitro::rnfoundationmodels {
 
   public:
     // Methods
+    inline std::shared_ptr<Promise<std::string>> respond(const std::string& prompt) override {
+      auto __result = _swiftPart.respond(prompt);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
     inline std::shared_ptr<Promise<std::string>> streamResponse(const std::string& prompt, const std::function<void(const std::string& /* stream */)>& onStream) override {
       auto __result = _swiftPart.streamResponse(prompt, onStream);
       if (__result.hasError()) [[unlikely]] {
