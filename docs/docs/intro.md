@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Getting Started
 
-React Native Apple AI is a Nitro module that provides access to Apple's Foundation Models (Apple Intelligence) for iOS 26.0+. This module enables AI features directly on-device with support for tool calling and streaming responses.
+React Native Foundation Models is a Nitro module that provides access to Apple's Foundation Models (Apple Intelligence) for iOS 26.0+. This module enables AI features directly on-device with support for tool calling and streaming responses.
 
 ## Prerequisites
 
@@ -17,11 +17,11 @@ React Native Apple AI is a Nitro module that provides access to Apple's Foundati
 ## Installation
 
 ```bash
-npm install react-native-apple-intelligence
+npm install react-native-foundation-models
 # or
-yarn add react-native-apple-intelligence
+yarn add react-native-foundation-models
 # or
-bun add react-native-apple-intelligence
+bun add react-native-foundation-models
 ```
 
 ### iOS Setup
@@ -31,7 +31,7 @@ No additional setup is required for iOS. The module will automatically detect Ap
 ## Quick Start
 
 ```typescript
-import { useLanguageModel } from 'react-native-apple-intelligence';
+import { useLanguageModel } from 'react-native-foundation-models';
 
 function MyComponent() {
   const { session, send, loading, isSessionReady, error } = useLanguageModel({

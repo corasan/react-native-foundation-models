@@ -1,4 +1,4 @@
-import { createTool, useLanguageModel } from 'react-native-apple-intelligence'
+import { createTool, useLanguageModel } from 'react-native-foundation-models'
 import { z } from 'zod'
 import { WeatherDemo } from '@/components/WeatherDemo'
 import { weatherResult } from '@/utils/weatherResult'

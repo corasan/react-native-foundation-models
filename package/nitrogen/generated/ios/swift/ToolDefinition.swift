@@ -11,10 +11,10 @@ import NitroModules
 /**
  * Represents an instance of `ToolDefinition`, backed by a C++ struct.
  */
-public typealias ToolDefinition = margelo.nitro.rnappleintelligence.ToolDefinition
+public typealias ToolDefinition = margelo.nitro.rnfoundationmodels.ToolDefinition
 
 public extension ToolDefinition {
-  private typealias bridge = margelo.nitro.rnappleintelligence.bridge.swift
+  private typealias bridge = margelo.nitro.rnfoundationmodels.bridge.swift
 
   /**
    * Create a new instance of `ToolDefinition`.
@@ -26,76 +26,49 @@ public extension ToolDefinition {
     }())
   }
 
+  @inline(__always)
   var name: String {
-    @inline(__always)
-    get {
-      return String(self.__name)
-    }
-    @inline(__always)
-    set {
-      self.__name = std.string(newValue)
-    }
+    return String(self.__name)
   }
   
+  @inline(__always)
   var description: String {
-    @inline(__always)
-    get {
-      return String(self.__description)
-    }
-    @inline(__always)
-    set {
-      self.__description = std.string(newValue)
-    }
+    return String(self.__description)
   }
   
+  @inline(__always)
   var arguments: AnyMap {
-    @inline(__always)
-    get {
-      return AnyMap(withCppPart: self.__arguments)
-    }
-    @inline(__always)
-    set {
-      self.__arguments = newValue.cppPart
-    }
+    return AnyMap(withCppPart: self.__arguments)
   }
   
+  @inline(__always)
   var handler: (_ args: AnyMap) -> Promise<Promise<AnyMap>> {
-    @inline(__always)
-    get {
-      return { () -> (AnyMap) -> Promise<Promise<AnyMap>> in
-        let __wrappedFunction = bridge.wrap_Func_std__shared_ptr_Promise_std__shared_ptr_Promise_std__shared_ptr_AnyMap______std__shared_ptr_AnyMap_(self.__handler)
-        return { (__args: AnyMap) -> Promise<Promise<AnyMap>> in
-          let __result = __wrappedFunction.call(__args.cppPart)
-          return { () -> Promise<Promise<AnyMap>> in
-            let __promise = Promise<Promise<AnyMap>>()
-            let __resolver = { (__result: Promise<AnyMap>) in
-              __promise.resolve(withResult: __result)
-            }
-            let __rejecter = { (__error: Error) in
-              __promise.reject(withError: __error)
-            }
-            let __resolverCpp = { () -> bridge.Func_void_std__shared_ptr_Promise_std__shared_ptr_AnyMap___ in
-              let __closureWrapper = Func_void_std__shared_ptr_Promise_std__shared_ptr_AnyMap___(__resolver)
-              return bridge.create_Func_void_std__shared_ptr_Promise_std__shared_ptr_AnyMap___(__closureWrapper.toUnsafe())
-            }()
-            let __rejecterCpp = { () -> bridge.Func_void_std__exception_ptr in
-              let __closureWrapper = Func_void_std__exception_ptr(__rejecter)
-              return bridge.create_Func_void_std__exception_ptr(__closureWrapper.toUnsafe())
-            }()
-            let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__shared_ptr_Promise_std__shared_ptr_AnyMap_____(__result)
-            __promiseHolder.addOnResolvedListener(__resolverCpp)
-            __promiseHolder.addOnRejectedListener(__rejecterCpp)
-            return __promise
+    return { () -> (AnyMap) -> Promise<Promise<AnyMap>> in
+      let __wrappedFunction = bridge.wrap_Func_std__shared_ptr_Promise_std__shared_ptr_Promise_std__shared_ptr_AnyMap______std__shared_ptr_AnyMap_(self.__handler)
+      return { (__args: AnyMap) -> Promise<Promise<AnyMap>> in
+        let __result = __wrappedFunction.call(__args.cppPart)
+        return { () -> Promise<Promise<AnyMap>> in
+          let __promise = Promise<Promise<AnyMap>>()
+          let __resolver = { (__result: Promise<AnyMap>) in
+            __promise.resolve(withResult: __result)
+          }
+          let __rejecter = { (__error: Error) in
+            __promise.reject(withError: __error)
+          }
+          let __resolverCpp = { () -> bridge.Func_void_std__shared_ptr_Promise_std__shared_ptr_AnyMap___ in
+            let __closureWrapper = Func_void_std__shared_ptr_Promise_std__shared_ptr_AnyMap___(__resolver)
+            return bridge.create_Func_void_std__shared_ptr_Promise_std__shared_ptr_AnyMap___(__closureWrapper.toUnsafe())
           }()
-        }
-      }()
-    }
-    @inline(__always)
-    set {
-      self.__handler = { () -> bridge.Func_std__shared_ptr_Promise_std__shared_ptr_Promise_std__shared_ptr_AnyMap______std__shared_ptr_AnyMap_ in
-        let __closureWrapper = Func_std__shared_ptr_Promise_std__shared_ptr_Promise_std__shared_ptr_AnyMap______std__shared_ptr_AnyMap_(newValue)
-        return bridge.create_Func_std__shared_ptr_Promise_std__shared_ptr_Promise_std__shared_ptr_AnyMap______std__shared_ptr_AnyMap_(__closureWrapper.toUnsafe())
-      }()
-    }
+          let __rejecterCpp = { () -> bridge.Func_void_std__exception_ptr in
+            let __closureWrapper = Func_void_std__exception_ptr(__rejecter)
+            return bridge.create_Func_void_std__exception_ptr(__closureWrapper.toUnsafe())
+          }()
+          let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__shared_ptr_Promise_std__shared_ptr_AnyMap_____(__result)
+          __promiseHolder.addOnResolvedListener(__resolverCpp)
+          __promiseHolder.addOnRejectedListener(__rejecterCpp)
+          return __promise
+        }()
+      }
+    }()
   }
 }

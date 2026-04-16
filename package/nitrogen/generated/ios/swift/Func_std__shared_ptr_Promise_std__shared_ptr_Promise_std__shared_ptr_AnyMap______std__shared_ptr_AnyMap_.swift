@@ -13,7 +13,7 @@ import NitroModules
  * This class can be used from C++, e.g. to wrap the Swift closure as a `std::function`.
  */
 public final class Func_std__shared_ptr_Promise_std__shared_ptr_Promise_std__shared_ptr_AnyMap______std__shared_ptr_AnyMap_ {
-  public typealias bridge = margelo.nitro.rnappleintelligence.bridge.swift
+  public typealias bridge = margelo.nitro.rnfoundationmodels.bridge.swift
 
   private let closure: (_ args: AnyMap) -> Promise<Promise<AnyMap>>
 

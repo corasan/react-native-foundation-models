@@ -9,7 +9,7 @@ sidebar_position: 4
 ```typescript
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, ScrollView } from 'react-native';
-import { useLanguageModel } from 'react-native-apple-intelligence';
+import { useLanguageModel } from 'react-native-foundation-models';
 
 export default function ChatApp() {
   const [messages, setMessages] = useState<Array<{role: 'user' | 'assistant', content: string}>>([]);
@@ -95,7 +95,7 @@ export default function ChatApp() {
 import React, { useState } from 'react';
 import { View, Text, Button } from 'react-native';
 import { z } from 'zod';
-import { useLanguageModel, createTool } from 'react-native-apple-intelligence';
+import { useLanguageModel, createTool } from 'react-native-foundation-models';
 
 // Define a weather tool
 const weatherTool = createTool({
@@ -211,7 +211,7 @@ export default function AIAssistant() {
 ```typescript
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button } from 'react-native';
-import { useLanguageModel, useStreamingResponse } from 'react-native-apple-intelligence';
+import { useLanguageModel, useStreamingResponse } from 'react-native-foundation-models';
 
 export default function StreamingChat() {
   const [input, setInput] = useState('');

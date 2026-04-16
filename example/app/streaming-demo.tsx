@@ -3,7 +3,7 @@ import {
   createTool,
   LanguageModelSession,
   useStreamingResponse,
-} from 'react-native-apple-intelligence'
+} from 'react-native-foundation-models'
 import { z } from 'zod'
 import { WeatherDemo } from '@/components/WeatherDemo'
 import { weatherResult } from '@/utils/weatherResult'

@@ -22,21 +22,26 @@
 #else
 #error NitroModules cannot be found! Are you sure you installed NitroModules properly?
 #endif
+#if __has_include(<NitroModules/PropNameIDCache.hpp>)
+#include <NitroModules/PropNameIDCache.hpp>
+#else
+#error NitroModules cannot be found! Are you sure you installed NitroModules properly?
+#endif
 
 // Forward declaration of `ToolDefinition` to properly resolve imports.
-namespace margelo::nitro::rnappleintelligence { struct ToolDefinition; }
+namespace margelo::nitro::rnfoundationmodels { struct ToolDefinition; }
 
 #include <string>
 #include <optional>
 #include "ToolDefinition.hpp"
 #include <vector>
 
-namespace margelo::nitro::rnappleintelligence {
+namespace margelo::nitro::rnfoundationmodels {
 
   /**
    * A struct which can be represented as a JavaScript object (LanguageModelSessionConfig).
    */
-  struct LanguageModelSessionConfig {
+  struct LanguageModelSessionConfig final {
   public:
     std::optional<std::string> instructions     SWIFT_PRIVATE;
     std::optional<std::vector<ToolDefinition>> tools     SWIFT_PRIVATE;
@@ -44,26 +49,29 @@ namespace margelo::nitro::rnappleintelligence {
   public:
     LanguageModelSessionConfig() = default;
     explicit LanguageModelSessionConfig(std::optional<std::string> instructions, std::optional<std::vector<ToolDefinition>> tools): instructions(instructions), tools(tools) {}
+
+  public:
+    // LanguageModelSessionConfig is not equatable because these properties are not equatable: tools
   };
 
-} // namespace margelo::nitro::rnappleintelligence
+} // namespace margelo::nitro::rnfoundationmodels
 
 namespace margelo::nitro {
 
   // C++ LanguageModelSessionConfig <> JS LanguageModelSessionConfig (object)
   template <>
-  struct JSIConverter<margelo::nitro::rnappleintelligence::LanguageModelSessionConfig> final {
-    static inline margelo::nitro::rnappleintelligence::LanguageModelSessionConfig fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::rnfoundationmodels::LanguageModelSessionConfig> final {
+    static inline margelo::nitro::rnfoundationmodels::LanguageModelSessionConfig fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
-      return margelo::nitro::rnappleintelligence::LanguageModelSessionConfig(
-        JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, "instructions")),
-        JSIConverter<std::optional<std::vector<margelo::nitro::rnappleintelligence::ToolDefinition>>>::fromJSI(runtime, obj.getProperty(runtime, "tools"))
+      return margelo::nitro::rnfoundationmodels::LanguageModelSessionConfig(
+        JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "instructions"))),
+        JSIConverter<std::optional<std::vector<margelo::nitro::rnfoundationmodels::ToolDefinition>>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "tools")))
       );
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::rnappleintelligence::LanguageModelSessionConfig& arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::rnfoundationmodels::LanguageModelSessionConfig& arg) {
       jsi::Object obj(runtime);
-      obj.setProperty(runtime, "instructions", JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.instructions));
-      obj.setProperty(runtime, "tools", JSIConverter<std::optional<std::vector<margelo::nitro::rnappleintelligence::ToolDefinition>>>::toJSI(runtime, arg.tools));
+      obj.setProperty(runtime, PropNameIDCache::get(runtime, "instructions"), JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.instructions));
+      obj.setProperty(runtime, PropNameIDCache::get(runtime, "tools"), JSIConverter<std::optional<std::vector<margelo::nitro::rnfoundationmodels::ToolDefinition>>>::toJSI(runtime, arg.tools));
       return obj;
     }
     static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
@@ -74,8 +82,8 @@ namespace margelo::nitro {
       if (!nitro::isPlainObject(runtime, obj)) {
         return false;
       }
-      if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, "instructions"))) return false;
-      if (!JSIConverter<std::optional<std::vector<margelo::nitro::rnappleintelligence::ToolDefinition>>>::canConvert(runtime, obj.getProperty(runtime, "tools"))) return false;
+      if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "instructions")))) return false;
+      if (!JSIConverter<std::optional<std::vector<margelo::nitro::rnfoundationmodels::ToolDefinition>>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "tools")))) return false;
       return true;
     }
   };

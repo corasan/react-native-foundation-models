@@ -34,7 +34,7 @@ export default function Home(): ReactNode {
   return (
     <Layout
       title={`${siteConfig.title}`}
-      description="React Native module for Apple Intelligence - bring on-device AI to your apps">
+      description="React Native module for Apple's Foundation Models - bring on-device AI to your apps">
       <HomepageHeader />
       <main>
         <HomepageFeatures />

@@ -10,7 +10,7 @@
 #include "HybridLanguageModelSessionSpec.hpp"
 
 // Forward declaration of `HybridLanguageModelSessionSpec_cxx` to properly resolve imports.
-namespace RNAppleIntelligence { class HybridLanguageModelSessionSpec_cxx; }
+namespace RNFoundationModels { class HybridLanguageModelSessionSpec_cxx; }
 
 
 
@@ -18,9 +18,9 @@ namespace RNAppleIntelligence { class HybridLanguageModelSessionSpec_cxx; }
 #include <NitroModules/Promise.hpp>
 #include <functional>
 
-#include "RNAppleIntelligence-Swift-Cxx-Umbrella.hpp"
+#include "RNFoundationModels-Swift-Cxx-Umbrella.hpp"
 
-namespace margelo::nitro::rnappleintelligence {
+namespace margelo::nitro::rnfoundationmodels {
 
   /**
    * The C++ part of HybridLanguageModelSessionSpec_cxx.swift.
@@ -35,13 +35,13 @@ namespace margelo::nitro::rnappleintelligence {
   class HybridLanguageModelSessionSpecSwift: public virtual HybridLanguageModelSessionSpec {
   public:
     // Constructor from a Swift instance
-    explicit HybridLanguageModelSessionSpecSwift(const RNAppleIntelligence::HybridLanguageModelSessionSpec_cxx& swiftPart):
+    explicit HybridLanguageModelSessionSpecSwift(const RNFoundationModels::HybridLanguageModelSessionSpec_cxx& swiftPart):
       HybridObject(HybridLanguageModelSessionSpec::TAG),
       _swiftPart(swiftPart) { }
 
   public:
     // Get the Swift part
-    inline RNAppleIntelligence::HybridLanguageModelSessionSpec_cxx& getSwiftPart() noexcept {
+    inline RNFoundationModels::HybridLanguageModelSessionSpec_cxx& getSwiftPart() noexcept {
       return _swiftPart;
     }
 
@@ -74,7 +74,7 @@ namespace margelo::nitro::rnappleintelligence {
     }
 
   private:
-    RNAppleIntelligence::HybridLanguageModelSessionSpec_cxx _swiftPart;
+    RNFoundationModels::HybridLanguageModelSessionSpec_cxx _swiftPart;
   };
 
-} // namespace margelo::nitro::rnappleintelligence
+} // namespace margelo::nitro::rnfoundationmodels

@@ -19,7 +19,7 @@
 #include <NitroModules/Promise.hpp>
 #include <functional>
 
-namespace margelo::nitro::rnappleintelligence {
+namespace margelo::nitro::rnfoundationmodels {
 
   using namespace margelo::nitro;
 
@@ -61,4 +61,4 @@ namespace margelo::nitro::rnappleintelligence {
       static constexpr auto TAG = "LanguageModelSession";
   };
 
-} // namespace margelo::nitro::rnappleintelligence
+} // namespace margelo::nitro::rnfoundationmodels

@@ -7,5 +7,5 @@
 
 #include "HybridLanguageModelSessionFactorySpecSwift.hpp"
 
-namespace margelo::nitro::rnappleintelligence {
-} // namespace margelo::nitro::rnappleintelligence
+namespace margelo::nitro::rnfoundationmodels {
+} // namespace margelo::nitro::rnfoundationmodels

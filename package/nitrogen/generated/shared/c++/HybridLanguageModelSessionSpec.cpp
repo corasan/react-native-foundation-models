@@ -7,7 +7,7 @@
 
 #include "HybridLanguageModelSessionSpec.hpp"
 
-namespace margelo::nitro::rnappleintelligence {
+namespace margelo::nitro::rnfoundationmodels {
 
   void HybridLanguageModelSessionSpec::loadHybridMethods() {
     // load base methods/properties
@@ -19,4 +19,4 @@ namespace margelo::nitro::rnappleintelligence {
     });
   }
 
-} // namespace margelo::nitro::rnappleintelligence
+} // namespace margelo::nitro::rnfoundationmodels

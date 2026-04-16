@@ -14,16 +14,16 @@
 #endif
 
 // Forward declaration of `HybridLanguageModelSessionSpec` to properly resolve imports.
-namespace margelo::nitro::rnappleintelligence { class HybridLanguageModelSessionSpec; }
+namespace margelo::nitro::rnfoundationmodels { class HybridLanguageModelSessionSpec; }
 // Forward declaration of `LanguageModelSessionConfig` to properly resolve imports.
-namespace margelo::nitro::rnappleintelligence { struct LanguageModelSessionConfig; }
+namespace margelo::nitro::rnfoundationmodels { struct LanguageModelSessionConfig; }
 
 #include <string>
 #include <memory>
 #include "HybridLanguageModelSessionSpec.hpp"
 #include "LanguageModelSessionConfig.hpp"
 
-namespace margelo::nitro::rnappleintelligence {
+namespace margelo::nitro::rnfoundationmodels {
 
   using namespace margelo::nitro;
 
@@ -66,4 +66,4 @@ namespace margelo::nitro::rnappleintelligence {
       static constexpr auto TAG = "LanguageModelSessionFactory";
   };
 
-} // namespace margelo::nitro::rnappleintelligence
+} // namespace margelo::nitro::rnfoundationmodels
