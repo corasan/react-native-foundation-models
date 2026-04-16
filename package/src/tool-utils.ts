@@ -57,21 +57,47 @@ function zodSchemaToAnyMap(schema: z.ZodObject<any>): AnyMap {
  * Gets the string representation of a Zod type for native code
  */
 function getZodTypeString(zodType: z.ZodTypeAny): string {
-  const typeName = zodType._def.typeName
+  let currentType = zodType
 
-  switch (typeName) {
-    case z.ZodFirstPartyTypeKind.ZodString:
+  while (true) {
+    const definition = currentType._def as {
+      type: string
+      innerType?: z.ZodTypeAny
+    }
+
+    if (
+      definition.type !== 'default' &&
+      definition.type !== 'optional' &&
+      definition.type !== 'nullable' &&
+      definition.type !== 'readonly' &&
+      definition.type !== 'nonoptional'
+    ) {
+      break
+    }
+
+    if (!definition.innerType) {
+      break
+    }
+
+    currentType = definition.innerType
+  }
+
+  switch (currentType._def.type) {
+    case 'string':
       return 'string'
-    case z.ZodFirstPartyTypeKind.ZodNumber:
+    case 'number':
       return 'number'
-    case z.ZodFirstPartyTypeKind.ZodBoolean:
+    case 'boolean':
       return 'boolean'
-    case z.ZodFirstPartyTypeKind.ZodArray:
+    case 'array':
       return 'array'
-    case z.ZodFirstPartyTypeKind.ZodObject:
+    case 'object':
       return 'object'
+    case 'enum':
+    case 'literal':
+      return 'string'
     default:
-      return 'string' // Default fallback
+      return 'string'
   }
 }
 
@@ -116,7 +142,7 @@ export function createTool<T extends ZodObjectSchema>(
               `Invalid arguments for tool '${definition.name}'`,
               {
                 toolName: definition.name,
-                zodErrors: error.errors,
+                zodErrors: error.issues,
                 receivedArgs: args,
               },
             )
