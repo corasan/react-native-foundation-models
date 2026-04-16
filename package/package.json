@@ -67,7 +67,7 @@
   "peerDependencies": {
     "react": "*",
     "react-native": "*",
-    "react-native-nitro-modules": "*"
+    "react-native-nitro-modules": ">=0.35.4"
   },
   "release-it": {
     "npm": {
