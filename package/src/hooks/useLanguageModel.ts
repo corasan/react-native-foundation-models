@@ -132,16 +132,14 @@ export function useLanguageModel(
         setError(null)
         setResponse('')
         isCancelledRef.current = false
-        let accumulatedResponse = ''
 
         const streamPromise = session.streamResponse(
           prompt,
-          (chunk: string) => {
+          (streamedResponse: string) => {
             if (isCancelledRef.current) return
 
-            accumulatedResponse += chunk
-            setResponse(accumulatedResponse)
-            onResponseRef.current?.(accumulatedResponse)
+            setResponse(streamedResponse)
+            onResponseRef.current?.(streamedResponse)
           },
         )
 

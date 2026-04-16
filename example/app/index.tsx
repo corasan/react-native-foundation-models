@@ -48,8 +48,8 @@ export default function IndexScreen() {
     setResult('')
 
     try {
-      await session.streamResponse(prompt, chunk => {
-        setResult(previous => previous + chunk)
+      await session.streamResponse(prompt, streamedResponse => {
+        setResult(streamedResponse)
       })
     } catch (error) {
       console.error('Failed to stream response:', error)

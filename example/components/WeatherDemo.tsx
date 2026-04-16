@@ -2,6 +2,9 @@ import { useCallback, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   TextInput,
   TouchableOpacity,
@@ -26,52 +29,74 @@ export function WeatherDemo({
   const [prompt, setPrompt] = useState('')
 
   const respond = useCallback(async () => {
-    if (!prompt.trim()) {
+    const nextPrompt = prompt.trim()
+
+    if (!nextPrompt) {
       Alert.alert('Error', 'Please enter a message')
       return
     }
+
+    Keyboard.dismiss()
+
     try {
-      await onSubmit(prompt)
+      await onSubmit(nextPrompt)
+      setPrompt('')
     } catch (err) {
       console.error('Error during response:', err)
     }
   }, [prompt, onSubmit])
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{response}</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 12 : 0}
+      style={styles.container}
+    >
+      <View style={styles.container}>
+        <Text style={styles.title}>{response}</Text>
 
-      <View style={{ height: 40 }}>
-        {isLoading && <ActivityIndicator size="small" />}
-      </View>
+        <View style={styles.loadingContainer}>
+          {isLoading && <ActivityIndicator size="small" />}
+        </View>
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          value={prompt}
-          onChangeText={text => {
-            setPrompt(text)
-            if (error && onReset) onReset()
-          }}
-          style={styles.input}
-          placeholder="Ask about the weather..."
-          editable={!isLoading}
-        />
-        <TouchableOpacity
-          onPress={() => respond()}
-          disabled={isLoading || !prompt.trim()}
-          style={[styles.button, (isLoading || !prompt.trim()) && styles.buttonDisabled]}
-        >
-          <Text
+        <View style={styles.inputContainer}>
+          <TextInput
+            value={prompt}
+            onChangeText={text => {
+              setPrompt(text)
+              if (error && onReset) onReset()
+            }}
+            onSubmitEditing={() => {
+              void respond()
+            }}
+            returnKeyType="send"
+            enablesReturnKeyAutomatically
+            style={styles.input}
+            placeholder="Ask about the weather..."
+            editable={!isLoading}
+          />
+          <TouchableOpacity
+            onPress={() => {
+              void respond()
+            }}
+            disabled={isLoading || !prompt.trim()}
             style={[
-              styles.buttonText,
-              (isLoading || !prompt.trim()) && styles.buttonTextDisabled,
+              styles.button,
+              (isLoading || !prompt.trim()) && styles.buttonDisabled,
             ]}
           >
-            {isLoading ? '...' : 'Send'}
-          </Text>
-        </TouchableOpacity>
+            <Text
+              style={[
+                styles.buttonText,
+                (isLoading || !prompt.trim()) && styles.buttonTextDisabled,
+              ]}
+            >
+              {isLoading ? '...' : 'Send'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 
@@ -86,10 +111,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     paddingVertical: 10,
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  loadingContainer: {
+    height: 40,
   },
   inputContainer: {
     flexDirection: 'row',

@@ -67,16 +67,14 @@ export function useStreamingResponse(
         setError(null)
         setResponse('')
         isCancelledRef.current = false
-        let accumulatedResponse = ''
 
         const streamPromise = session.streamResponse(
           prompt,
-          (chunk: string) => {
+          (streamedResponse: string) => {
             if (isCancelledRef.current) return
 
-            accumulatedResponse += chunk
-            setResponse(accumulatedResponse)
-            options?.onToken?.(chunk)
+            setResponse(streamedResponse)
+            options?.onToken?.(streamedResponse)
           },
         )
 
