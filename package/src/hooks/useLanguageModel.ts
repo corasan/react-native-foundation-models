@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { AppleAIError } from '../errors'
 import { isAppleAIError, parseNativeError, SessionNotInitializedError } from '../errors'
-import { LanguageModelSession } from '../LanguageModelSession'
-import type { LanguageModelSessionConfig } from '../specs/LanguageModelSession.nitro'
+import {
+  LanguageModelSession,
+  type LanguageModelSessionOptions,
+} from '../LanguageModelSession'
 
-export interface UseLanguageModelConfig extends LanguageModelSessionConfig {
+export interface UseLanguageModelConfig extends LanguageModelSessionOptions {
   onResponse?: (response: string) => void
   onError?: (error: AppleAIError) => void
 }
@@ -78,14 +80,23 @@ export function useLanguageModel(
   })
 
   // Create session config object, memoized to prevent unnecessary recreations
-  const sessionConfig = useMemo((): LanguageModelSessionConfig | undefined => {
-    if (!config?.instructions && !config?.tools) return undefined
+  const sessionConfig = useMemo((): LanguageModelSessionOptions | undefined => {
+    if (
+      !config?.instructions &&
+      !config?.tools &&
+      !config?.useCase &&
+      !config?.guardrails
+    ) {
+      return undefined
+    }
 
     return {
       instructions: config.instructions,
       tools: config.tools,
+      useCase: config.useCase,
+      guardrails: config.guardrails,
     }
-  }, [config?.instructions, config?.tools])
+  }, [config?.instructions, config?.tools, config?.useCase, config?.guardrails])
 
   // Initialize session when config changes
   useEffect(() => {

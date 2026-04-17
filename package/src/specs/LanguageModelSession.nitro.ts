@@ -10,6 +10,8 @@ export interface ToolDefinition {
 export interface LanguageModelSessionConfig {
   instructions?: string
   tools?: Array<ToolDefinition>
+  useCase?: string
+  guardrails?: string
 }
 
 export interface LanguageModelSession extends HybridObject<{ ios: 'swift' }> {

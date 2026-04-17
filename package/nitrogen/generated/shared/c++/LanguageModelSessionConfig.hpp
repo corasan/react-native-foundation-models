@@ -45,10 +45,12 @@ namespace margelo::nitro::rnfoundationmodels {
   public:
     std::optional<std::string> instructions     SWIFT_PRIVATE;
     std::optional<std::vector<ToolDefinition>> tools     SWIFT_PRIVATE;
+    std::optional<std::string> useCase     SWIFT_PRIVATE;
+    std::optional<std::string> guardrails     SWIFT_PRIVATE;
 
   public:
     LanguageModelSessionConfig() = default;
-    explicit LanguageModelSessionConfig(std::optional<std::string> instructions, std::optional<std::vector<ToolDefinition>> tools): instructions(instructions), tools(tools) {}
+    explicit LanguageModelSessionConfig(std::optional<std::string> instructions, std::optional<std::vector<ToolDefinition>> tools, std::optional<std::string> useCase, std::optional<std::string> guardrails): instructions(instructions), tools(tools), useCase(useCase), guardrails(guardrails) {}
 
   public:
     // LanguageModelSessionConfig is not equatable because these properties are not equatable: tools
@@ -65,13 +67,17 @@ namespace margelo::nitro {
       jsi::Object obj = arg.asObject(runtime);
       return margelo::nitro::rnfoundationmodels::LanguageModelSessionConfig(
         JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "instructions"))),
-        JSIConverter<std::optional<std::vector<margelo::nitro::rnfoundationmodels::ToolDefinition>>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "tools")))
+        JSIConverter<std::optional<std::vector<margelo::nitro::rnfoundationmodels::ToolDefinition>>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "tools"))),
+        JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "useCase"))),
+        JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "guardrails")))
       );
     }
     static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::rnfoundationmodels::LanguageModelSessionConfig& arg) {
       jsi::Object obj(runtime);
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "instructions"), JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.instructions));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "tools"), JSIConverter<std::optional<std::vector<margelo::nitro::rnfoundationmodels::ToolDefinition>>>::toJSI(runtime, arg.tools));
+      obj.setProperty(runtime, PropNameIDCache::get(runtime, "useCase"), JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.useCase));
+      obj.setProperty(runtime, PropNameIDCache::get(runtime, "guardrails"), JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.guardrails));
       return obj;
     }
     static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
@@ -84,6 +90,8 @@ namespace margelo::nitro {
       }
       if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "instructions")))) return false;
       if (!JSIConverter<std::optional<std::vector<margelo::nitro::rnfoundationmodels::ToolDefinition>>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "tools")))) return false;
+      if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "useCase")))) return false;
+      if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "guardrails")))) return false;
       return true;
     }
   };
