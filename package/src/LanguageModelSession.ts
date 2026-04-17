@@ -82,7 +82,9 @@ export function getFoundationModelsModelFamily():
 
 export function getFoundationModelsContextSize(): number | undefined {
   try {
-    return LanguageModelSessionFactory.isAvailable || Platform.OS === 'ios' ? 4096 : undefined
+    return LanguageModelSessionFactory.isAvailable || Platform.OS === 'ios'
+      ? 4096
+      : undefined
   } catch (_error) {
     return undefined
   }

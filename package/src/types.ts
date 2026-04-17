@@ -27,9 +27,7 @@ export interface Tool {
 
 export type SystemLanguageModelUseCase = 'general' | 'contentTagging'
 
-export type SystemLanguageModelGuardrails =
-  | 'default'
-  | 'permissiveContentTransformations'
+export type SystemLanguageModelGuardrails = 'default' | 'permissiveContentTransformations'
 
 export type FoundationModelsModelFamily = '26.0-26.3' | '26.4+'
 
