@@ -18,12 +18,7 @@ public extension LanguageModelSessionConfig {
   /**
    * Create a new instance of `LanguageModelSessionConfig`.
    */
-  init(
-    instructions: String?,
-    tools: [ToolDefinition]?,
-    useCase: String?,
-    guardrails: String?
-  ) {
+  init(instructions: String?, tools: [ToolDefinition]?, useCase: String?, guardrails: String?) {
     self.init({ () -> bridge.std__optional_std__string_ in
       if let __unwrappedValue = instructions {
         return bridge.create_std__optional_std__string_(std.string(__unwrappedValue))
@@ -80,7 +75,7 @@ public extension LanguageModelSessionConfig {
       }
     }()
   }
-
+  
   @inline(__always)
   var useCase: String? {
     return { () -> String? in
@@ -92,7 +87,7 @@ public extension LanguageModelSessionConfig {
       }
     }()
   }
-
+  
   @inline(__always)
   var guardrails: String? {
     return { () -> String? in

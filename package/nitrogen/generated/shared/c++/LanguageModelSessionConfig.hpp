@@ -50,12 +50,7 @@ namespace margelo::nitro::rnfoundationmodels {
 
   public:
     LanguageModelSessionConfig() = default;
-    explicit LanguageModelSessionConfig(
-      std::optional<std::string> instructions,
-      std::optional<std::vector<ToolDefinition>> tools,
-      std::optional<std::string> useCase,
-      std::optional<std::string> guardrails
-    ): instructions(instructions), tools(tools), useCase(useCase), guardrails(guardrails) {}
+    explicit LanguageModelSessionConfig(std::optional<std::string> instructions, std::optional<std::vector<ToolDefinition>> tools, std::optional<std::string> useCase, std::optional<std::string> guardrails): instructions(instructions), tools(tools), useCase(useCase), guardrails(guardrails) {}
 
   public:
     // LanguageModelSessionConfig is not equatable because these properties are not equatable: tools
