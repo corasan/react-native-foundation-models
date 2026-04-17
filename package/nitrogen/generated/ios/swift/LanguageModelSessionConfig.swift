@@ -18,7 +18,12 @@ public extension LanguageModelSessionConfig {
   /**
    * Create a new instance of `LanguageModelSessionConfig`.
    */
-  init(instructions: String?, tools: [ToolDefinition]?) {
+  init(
+    instructions: String?,
+    tools: [ToolDefinition]?,
+    useCase: String?,
+    guardrails: String?
+  ) {
     self.init({ () -> bridge.std__optional_std__string_ in
       if let __unwrappedValue = instructions {
         return bridge.create_std__optional_std__string_(std.string(__unwrappedValue))
@@ -34,6 +39,18 @@ public extension LanguageModelSessionConfig {
           }
           return __vector
         }())
+      } else {
+        return .init()
+      }
+    }(), { () -> bridge.std__optional_std__string_ in
+      if let __unwrappedValue = useCase {
+        return bridge.create_std__optional_std__string_(std.string(__unwrappedValue))
+      } else {
+        return .init()
+      }
+    }(), { () -> bridge.std__optional_std__string_ in
+      if let __unwrappedValue = guardrails {
+        return bridge.create_std__optional_std__string_(std.string(__unwrappedValue))
       } else {
         return .init()
       }
@@ -58,6 +75,30 @@ public extension LanguageModelSessionConfig {
       if bridge.has_value_std__optional_std__vector_ToolDefinition__(self.__tools) {
         let __unwrapped = bridge.get_std__optional_std__vector_ToolDefinition__(self.__tools)
         return __unwrapped.map({ __item in __item })
+      } else {
+        return nil
+      }
+    }()
+  }
+
+  @inline(__always)
+  var useCase: String? {
+    return { () -> String? in
+      if bridge.has_value_std__optional_std__string_(self.__useCase) {
+        let __unwrapped = bridge.get_std__optional_std__string_(self.__useCase)
+        return String(__unwrapped)
+      } else {
+        return nil
+      }
+    }()
+  }
+
+  @inline(__always)
+  var guardrails: String? {
+    return { () -> String? in
+      if bridge.has_value_std__optional_std__string_(self.__guardrails) {
+        let __unwrapped = bridge.get_std__optional_std__string_(self.__guardrails)
+        return String(__unwrapped)
       } else {
         return nil
       }

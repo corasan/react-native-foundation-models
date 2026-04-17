@@ -8,6 +8,7 @@ class HybridLanguageModelSession: HybridLanguageModelSessionSpec {
     private var tools: [any Tool] = []
     private var jsTools: [ToolDefinition] = []
     private var contextWasReset: Bool = false
+    private let model: SystemLanguageModel
     
     /**
      * Initializes the wrapper with a FoundationModels session configured
@@ -16,7 +17,7 @@ class HybridLanguageModelSession: HybridLanguageModelSessionSpec {
      * - Parameter config: Custom configuration containing instructions and HybridTool instances
      * - Throws: Any errors that occur during session creation
      */
-    init(config: LanguageModelSessionConfig) throws {
+    init(config: LanguageModelSessionConfig, model: SystemLanguageModel) throws {
         let jsTools: [ToolDefinition] = config.tools ?? []
         var tools: [any Tool] = []
         
@@ -40,7 +41,12 @@ class HybridLanguageModelSession: HybridLanguageModelSessionSpec {
             tools: jsTools
         )
         
-        let session = LanguageModelSession(tools: tools, instructions: enhancedInstructions)
+        let session = LanguageModelSession(
+            model: model,
+            tools: tools,
+            instructions: enhancedInstructions
+        )
+        self.model = model
         self.session = session
         self.tools = tools
         self.jsTools = jsTools
@@ -132,14 +138,18 @@ class HybridLanguageModelSession: HybridLanguageModelSessionSpec {
     
     @available(iOS 26.0, *)
     private func createNewSessionWithSummary(previousSession: LanguageModelSession) async throws -> LanguageModelSession {
-        let summarySession = LanguageModelSession(transcript: previousSession.transcript)
+        let summarySession = LanguageModelSession(model: self.model, transcript: previousSession.transcript)
         let summaryResponse = try await summarySession.respond(to: "Summarize this conversation in a concise way that preserves the key context and information.")
         let enhancedInstructions = Self.buildEnhancedInstructions(
             baseInstructions: "You are a helpful assistant. Previous conversation summary: \(summaryResponse.content)",
             tools: self.jsTools
         )
         
-        return LanguageModelSession(tools: self.tools, instructions: enhancedInstructions)
+        return LanguageModelSession(
+            model: self.model,
+            tools: self.tools,
+            instructions: enhancedInstructions
+        )
     }
     
     @available(iOS 26.0, *)

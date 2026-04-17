@@ -16,7 +16,11 @@ class HybridLanguageModelSessionFactory: HybridLanguageModelSessionFactorySpec {
      */
     func create(config: LanguageModelSessionConfig) throws -> HybridLanguageModelSessionSpec {
         if #available(iOS 26.0, *) {
-            return try HybridLanguageModelSession(config: config)
+            let model = try Self.makeModel(
+                useCase: config.useCase,
+                guardrails: config.guardrails
+            )
+            return try HybridLanguageModelSession(config: config, model: model)
         } else {
             throw NSError(domain: "RNFoundationModels.FoundationModels", code: 1001, userInfo: [
                 NSLocalizedDescriptionKey: "Apple Foundation Models requires iOS 26.0 or later"
@@ -50,6 +54,35 @@ class HybridLanguageModelSessionFactory: HybridLanguageModelSessionFactorySpec {
             }
         } else {
             return "unavailable.deviceNotEligible"
+        }
+    }
+
+    @available(iOS 26.0, *)
+    private static func makeModel(
+        useCase: String?,
+        guardrails: String?
+    ) throws -> SystemLanguageModel {
+        let resolvedGuardrails = try mapGuardrails(guardrails)
+
+        switch useCase ?? "general" {
+        case "general":
+            return SystemLanguageModel(useCase: .general, guardrails: resolvedGuardrails)
+        case "contentTagging":
+            return SystemLanguageModel(useCase: .contentTagging, guardrails: resolvedGuardrails)
+        default:
+            throw AppleAIError.unsupportedPlatform("Unsupported SystemLanguageModel use case: \(useCase ?? "")")
+        }
+    }
+
+    @available(iOS 26.0, *)
+    private static func mapGuardrails(_ guardrails: String?) throws -> SystemLanguageModel.Guardrails {
+        switch guardrails ?? "default" {
+        case "default":
+            return .default
+        case "permissiveContentTransformations":
+            return .permissiveContentTransformations
+        default:
+            throw AppleAIError.unsupportedPlatform("Unsupported SystemLanguageModel guardrails mode: \(guardrails ?? "")")
         }
     }
 }

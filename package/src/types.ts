@@ -25,6 +25,14 @@ export interface Tool {
   resultSchema?: Record<string, GenerableProperty>
 }
 
+export type SystemLanguageModelUseCase = 'general' | 'contentTagging'
+
+export type SystemLanguageModelGuardrails =
+  | 'default'
+  | 'permissiveContentTransformations'
+
+export type FoundationModelsModelFamily = '26.0-26.3' | '26.4+'
+
 export type AvailabilityStatus =
   | 'available'
   | 'unavailable.platformNotSupported'
@@ -37,4 +45,6 @@ export interface FoundationModelsAvailability {
   isAvailable: boolean
   status: AvailabilityStatus
   message: string
+  contextSize?: number
+  modelFamily?: FoundationModelsModelFamily
 }

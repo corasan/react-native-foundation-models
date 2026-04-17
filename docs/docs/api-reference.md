@@ -17,6 +17,8 @@ constructor(config?: LanguageModelSessionConfig)
 **Parameters**:
 - `config.instructions?: string` - System instructions defining AI behavior
 - `config.tools?: ToolDefinition[]` - Array of tools the AI can invoke
+- `config.useCase?: 'general' | 'contentTagging'` - Configures the system model use case
+- `config.guardrails?: 'default' | 'permissiveContentTransformations'` - Configures Foundation Models guardrails
 
 ### Instance Methods
 
@@ -54,6 +56,24 @@ function checkFoundationModelsAvailability(): FoundationModelsAvailability
 ```
 
 **Returns**: Availability status object with `isAvailable`, `status`, and `message`.
+
+The returned object also includes:
+- `contextSize?: number`
+- `modelFamily?: '26.0-26.3' | '26.4+'`
+
+### `getFoundationModelsModelFamily()`
+
+```typescript
+function getFoundationModelsModelFamily(): '26.0-26.3' | '26.4+' | undefined
+```
+
+### `getFoundationModelsContextSize()`
+
+```typescript
+function getFoundationModelsContextSize(): number | undefined
+```
+
+The library currently reports Apple’s documented 4,096-token context window for the on-device model on iOS 26.0 through 26.3. Direct bridging to the native `SystemLanguageModel.contextSize` and `tokenCount(for:)` APIs requires an iOS 26.4 SDK.
 
 ## Hooks
 
@@ -109,6 +129,8 @@ interface FoundationModelsAvailability {
   isAvailable: boolean;
   status: AvailabilityStatus;
   message: string;
+  contextSize?: number;
+  modelFamily?: '26.0-26.3' | '26.4+';
 }
 ```
 
@@ -130,6 +152,8 @@ type AvailabilityStatus =
 interface LanguageModelSessionConfig {
   instructions?: string;
   tools?: ToolDefinition[];
+  useCase?: 'general' | 'contentTagging';
+  guardrails?: 'default' | 'permissiveContentTransformations';
 }
 ```
 
