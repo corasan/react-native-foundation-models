@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "example",
-    "slug": "example",
+    "name": "foundation-models-example",
+    "slug": "foundation-models",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "example",
+    "scheme": "foundation-models",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.henrypaulino.example",
+      "bundleIdentifier": "com.henrypaulino.foundation-models",
       "appleTeamId": "M52W2L8ZQV"
     },
     "android": {
@@ -24,7 +24,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.henrypaulino.example"
+      "package": "com.henrypaulino.foundation-models"
     },
     "plugins": [
       "expo-router",
