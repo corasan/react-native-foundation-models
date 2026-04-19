@@ -180,6 +180,16 @@ export class LanguageModelSession {
     return this.session.streamResponse(prompt, onChunk)
   }
 
+  /**
+   * Returns the number of tokens the provided prompt consumes for this session's model.
+   *
+   * Note: This API is only available on iOS 26.4 or later. On earlier versions
+   * the returned promise will reject with an `UNSUPPORTED_PLATFORM` error.
+   */
+  tokenCount(prompt: string): Promise<number> {
+    return this.session.tokenCount(prompt)
+  }
+
   get wasContextReset(): boolean {
     return this.session.wasContextReset
   }

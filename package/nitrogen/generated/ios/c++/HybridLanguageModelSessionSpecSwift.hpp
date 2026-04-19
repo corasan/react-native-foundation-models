@@ -86,6 +86,14 @@ namespace margelo::nitro::rnfoundationmodels {
       auto __value = std::move(__result.value());
       return __value;
     }
+    inline std::shared_ptr<Promise<double>> tokenCount(const std::string& prompt) override {
+      auto __result = _swiftPart.tokenCount(prompt);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
 
   private:
     RNFoundationModels::HybridLanguageModelSessionSpec_cxx _swiftPart;
