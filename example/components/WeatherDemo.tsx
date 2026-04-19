@@ -10,6 +10,14 @@ import {
   TouchableOpacity,
 } from 'react-native'
 import { Text, View } from '@/components/Themed'
+import { formatNumber } from '@/utils/formatNumber'
+import type { TokenMetrics } from '@/utils/tokenMetrics'
+
+interface UsageMetrics {
+  contextSize?: number
+  tokens?: TokenMetrics
+  contextReset?: boolean
+}
 
 interface WeatherDemoProps {
   response: string
@@ -17,6 +25,7 @@ interface WeatherDemoProps {
   error?: any
   onSubmit: (prompt: string) => Promise<void> | void
   onReset?: () => void
+  metrics?: UsageMetrics
 }
 
 export function WeatherDemo({
@@ -25,6 +34,7 @@ export function WeatherDemo({
   error,
   onSubmit,
   onReset,
+  metrics,
 }: WeatherDemoProps) {
   const [prompt, setPrompt] = useState('')
 
@@ -53,7 +63,30 @@ export function WeatherDemo({
       style={styles.container}
     >
       <View style={styles.container}>
-        <Text style={styles.title}>{response}</Text>
+        <View style={styles.responseCard}>
+          <Text style={styles.responseLabel}>Latest response</Text>
+          <Text style={styles.title}>{response || 'Ask about the weather to start a session.'}</Text>
+        </View>
+
+        <View style={styles.metricsCard}>
+          <Text style={styles.metricsTitle}>Session usage</Text>
+          <Text style={styles.metricsNote}>Token counts are estimated on this SDK build.</Text>
+          <Text style={styles.metricText}>
+            Context window: {formatNumber(metrics?.contextSize)} tokens
+          </Text>
+          <Text style={styles.metricText}>
+            Estimated prompt tokens: {formatNumber(metrics?.tokens?.promptTokens)}
+          </Text>
+          <Text style={styles.metricText}>
+            Estimated response tokens: {formatNumber(metrics?.tokens?.responseTokens)}
+          </Text>
+          <Text style={styles.metricText}>
+            Estimated total tokens: {formatNumber(metrics?.tokens?.totalTokens)}
+          </Text>
+          {metrics?.contextReset ? (
+            <Text style={styles.resetText}>Context was summarized and reset after reaching the limit.</Text>
+          ) : null}
+        </View>
 
         <View style={styles.loadingContainer}>
           {isLoading && <ActivityIndicator size="small" />}
@@ -103,21 +136,65 @@ export function WeatherDemo({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'flex-end',
     padding: 16,
   },
+  responseCard: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#e3e3e3',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 12,
+  },
+  responseLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    opacity: 0.6,
+    marginBottom: 8,
+  },
   title: {
     fontSize: 18,
-    paddingVertical: 10,
+    lineHeight: 26,
+  },
+  metricsCard: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#e3e3e3',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 12,
+  },
+  metricsTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  metricsNote: {
+    fontSize: 12,
+    lineHeight: 18,
+    opacity: 0.65,
+    marginBottom: 8,
+  },
+  metricText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  resetText: {
+    marginTop: 8,
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#cc7a00',
   },
   loadingContainer: {
     height: 40,
+    justifyContent: 'center',
   },
   inputContainer: {
     flexDirection: 'row',
     gap: 12,
     alignItems: 'center',
+    width: '100%',
   },
   input: {
     borderWidth: 1,

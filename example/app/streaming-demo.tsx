@@ -1,11 +1,13 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import {
   createTool,
+  getFoundationModelsContextSize,
   LanguageModelSession,
   useStreamingResponse,
 } from 'react-native-foundation-models'
 import { z } from 'zod'
 import { WeatherDemo } from '@/components/WeatherDemo'
+import { getTokenMetrics, type TokenMetrics } from '@/utils/tokenMetrics'
 import { weatherResult } from '@/utils/weatherResult'
 
 const WEATHER_API_KEY = process.env.EXPO_PUBLIC_WEATHER_API_KEY
@@ -48,17 +50,31 @@ const session = new LanguageModelSession({
   instructions: 'You are a helpful assistant',
   tools: [weatherTool],
 })
+const contextSize = getFoundationModelsContextSize()
 
 export default function StreamingDemoScreen() {
+  const [tokenMetrics, setTokenMetrics] = useState<TokenMetrics>()
+  const [contextReset, setContextReset] = useState(false)
   const { response, isStreaming, error, streamResponse, reset } =
     useStreamingResponse(session)
 
   const handleSubmit = useCallback(
     async (prompt: string) => {
-      await streamResponse(prompt)
+      setTokenMetrics(undefined)
+      setContextReset(false)
+
+      const fullResponse = await streamResponse(prompt)
+      setTokenMetrics(getTokenMetrics(prompt, fullResponse))
+      setContextReset(session.wasContextReset)
     },
     [streamResponse],
   )
+
+  const handleReset = useCallback(() => {
+    reset()
+    setTokenMetrics(undefined)
+    setContextReset(false)
+  }, [reset])
 
   return (
     <WeatherDemo
@@ -66,7 +82,12 @@ export default function StreamingDemoScreen() {
       isLoading={isStreaming}
       error={error}
       onSubmit={handleSubmit}
-      onReset={reset}
+      onReset={handleReset}
+      metrics={{
+        contextSize,
+        tokens: tokenMetrics,
+        contextReset,
+      }}
     />
   )
 }
