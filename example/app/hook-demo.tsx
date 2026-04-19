@@ -1,6 +1,12 @@
-import { createTool, useLanguageModel } from 'react-native-foundation-models'
+import { useState } from 'react'
+import {
+  createTool,
+  getFoundationModelsContextSize,
+  useLanguageModel,
+} from 'react-native-foundation-models'
 import { z } from 'zod'
 import { WeatherDemo } from '@/components/WeatherDemo'
+import { getTokenMetrics, type TokenMetrics } from '@/utils/tokenMetrics'
 import { weatherResult } from '@/utils/weatherResult'
 
 const WEATHER_API_KEY = process.env.EXPO_PUBLIC_WEATHER_API_KEY
@@ -35,12 +41,16 @@ const weatherTool = createTool({
 })
 
 const tools = [weatherTool]
+const contextSize = getFoundationModelsContextSize()
 
 export default function HookDemoScreen() {
-  const { response, loading, error, send, reset, isSessionReady } = useLanguageModel({
-    instructions: 'You are a helpful assistant',
-    tools,
-  })
+  const [tokenMetrics, setTokenMetrics] = useState<TokenMetrics>()
+  const [contextReset, setContextReset] = useState(false)
+  const { response, loading, error, send, reset, isSessionReady, session } =
+    useLanguageModel({
+      instructions: 'You are a helpful assistant',
+      tools,
+    })
 
   const handleSubmit = async (prompt: string) => {
     if (!isSessionReady) {
@@ -49,10 +59,22 @@ export default function HookDemoScreen() {
     }
 
     try {
-      await send(prompt)
+      setTokenMetrics(undefined)
+      setContextReset(false)
+      const fullResponse = await send(prompt)
+      setTokenMetrics(getTokenMetrics(prompt, fullResponse))
+      setContextReset(Boolean(session?.wasContextReset))
     } catch (err) {
       console.error('Failed to send prompt:', err)
+      setTokenMetrics(undefined)
+      setContextReset(Boolean(session?.wasContextReset))
     }
+  }
+
+  const handleReset = () => {
+    reset()
+    setTokenMetrics(undefined)
+    setContextReset(false)
   }
 
   return (
@@ -61,7 +83,12 @@ export default function HookDemoScreen() {
       isLoading={loading}
       error={error}
       onSubmit={handleSubmit}
-      onReset={reset}
+      onReset={handleReset}
+      metrics={{
+        contextSize,
+        tokens: tokenMetrics,
+        contextReset,
+      }}
     />
   )
 }

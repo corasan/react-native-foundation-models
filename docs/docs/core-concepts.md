@@ -17,7 +17,9 @@ import { LanguageModelSession } from 'react-native-foundation-models';
 
 const session = new LanguageModelSession({
   instructions: "You are a helpful coding assistant.",
-  tools: [weatherTool, calculatorTool]
+  tools: [weatherTool, calculatorTool],
+  useCase: 'general',
+  guardrails: 'default'
 });
 ```
 
@@ -40,6 +42,8 @@ import { checkFoundationModelsAvailability } from 'react-native-foundation-model
 const availability = checkFoundationModelsAvailability();
 console.log(availability.status); // 'available' or 'unavailable.xxx'
 console.log(availability.message); // Human-readable message
+console.log(availability.modelFamily); // '26.0-26.3' or '26.4+'
+console.log(availability.contextSize); // 4096 on current SDK-backed builds
 ```
 
 ### Availability States
@@ -50,6 +54,13 @@ console.log(availability.message); // Human-readable message
 - `unavailable.appleIntelligenceNotEnabled`: Not enabled in Settings
 - `unavailable.modelNotReady`: Model downloading or not ready
 - `unavailable.unknown`: Unknown reason
+
+### Model Metadata
+
+The library also exposes:
+
+- The current model family via `modelFamily`, which helps you version prompts across Apple’s `26.0-26.3` and `26.4+` model families
+- The current context budget via `contextSize`
 
 ## Tool Calling
 

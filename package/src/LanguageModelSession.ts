@@ -1,15 +1,28 @@
 import { NitroModules } from 'react-native-nitro-modules'
+import { Platform } from 'react-native'
 import type {
   LanguageModelSessionConfig,
   LanguageModelSessionFactory as LanguageModelSessionFactorySpec,
   LanguageModelSession as LanguageModelSessionSpec,
 } from './specs/LanguageModelSession.nitro'
-import type { AvailabilityStatus, FoundationModelsAvailability } from './types'
+import type {
+  AvailabilityStatus,
+  FoundationModelsAvailability,
+  FoundationModelsModelFamily,
+  SystemLanguageModelGuardrails,
+  SystemLanguageModelUseCase,
+} from './types'
 
 const LanguageModelSessionFactory =
   NitroModules.createHybridObject<LanguageModelSessionFactorySpec>(
     'LanguageModelSessionFactory',
   )
+
+export interface LanguageModelSessionOptions
+  extends Omit<LanguageModelSessionConfig, 'useCase' | 'guardrails'> {
+  useCase?: SystemLanguageModelUseCase
+  guardrails?: SystemLanguageModelGuardrails
+}
 
 /**
  * Gets a human-readable message for the availability status
@@ -33,6 +46,50 @@ function getAvailabilityMessage(status: AvailabilityStatus): string {
   }
 }
 
+function parseIOSVersion(versionValue: string | number): {
+  major: number
+  minor: number
+} | null {
+  const match = String(versionValue).match(/^(\d+)(?:\.(\d+))?/)
+  if (!match) {
+    return null
+  }
+
+  return {
+    major: Number.parseInt(match[1] ?? '0', 10),
+    minor: Number.parseInt(match[2] ?? '0', 10),
+  }
+}
+
+export function getFoundationModelsModelFamily():
+  | FoundationModelsModelFamily
+  | undefined {
+  if (Platform.OS !== 'ios') {
+    return undefined
+  }
+
+  const version = parseIOSVersion(Platform.Version)
+  if (!version) {
+    return undefined
+  }
+
+  if (version.major > 26 || (version.major === 26 && version.minor >= 4)) {
+    return '26.4+'
+  }
+
+  return '26.0-26.3'
+}
+
+export function getFoundationModelsContextSize(): number | undefined {
+  try {
+    return LanguageModelSessionFactory.isAvailable || Platform.OS === 'ios'
+      ? 4096
+      : undefined
+  } catch (_error) {
+    return undefined
+  }
+}
+
 /**
  * Checks the availability of Foundation Models
  * @returns FoundationModelsAvailability object with detailed status
@@ -49,12 +106,16 @@ export function checkFoundationModelsAvailability(): FoundationModelsAvailabilit
       isAvailable,
       status,
       message: getAvailabilityMessage(status),
+      contextSize: getFoundationModelsContextSize(),
+      modelFamily: getFoundationModelsModelFamily(),
     }
   } catch (_error) {
     return {
       isAvailable: false,
       status: 'unavailable.platformNotSupported',
       message: getAvailabilityMessage('unavailable.platformNotSupported'),
+      contextSize: getFoundationModelsContextSize(),
+      modelFamily: getFoundationModelsModelFamily(),
     }
   }
 }
@@ -90,7 +151,7 @@ export class LanguageModelSession {
    * @param instructions - Optional system instructions to guide the AI's behavior
    * @param tools - Optional array of tools that the AI can use during conversations
    */
-  constructor(config?: LanguageModelSessionConfig) {
+  constructor(config?: LanguageModelSessionOptions) {
     const availability = checkFoundationModelsAvailability()
     if (!availability.isAvailable) {
       throw new Error(`Foundation Models is not available: ${availability.message}`)
@@ -99,6 +160,8 @@ export class LanguageModelSession {
     this.session = LanguageModelSessionFactory.create({
       instructions: config?.instructions,
       tools: config?.tools,
+      useCase: config?.useCase,
+      guardrails: config?.guardrails,
     })
   }
 
@@ -115,5 +178,9 @@ export class LanguageModelSession {
    */
   streamResponse(prompt: string, onChunk: (chunk: string) => void): Promise<string> {
     return this.session.streamResponse(prompt, onChunk)
+  }
+
+  get wasContextReset(): boolean {
+    return this.session.wasContextReset
   }
 }

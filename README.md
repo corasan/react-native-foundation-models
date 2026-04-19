@@ -25,7 +25,9 @@ bun add react-native-foundation-models react-native-nitro-modules
 import { LanguageModelSession } from 'react-native-foundation-models';
 
 const session = new LanguageModelSession({
-  instructions: 'You are a helpful assistant'
+  instructions: 'You are a helpful assistant',
+  useCase: 'general',
+  guardrails: 'default',
 });
 
 // Stream responses
@@ -96,8 +98,12 @@ Core class for managing AI conversations.
 constructor(config?: {
   instructions?: string;
   tools?: Tool[];
+  useCase?: 'general' | 'contentTagging';
+  guardrails?: 'default' | 'permissiveContentTransformations';
 })
 ```
+
+The library now creates sessions with an explicit `SystemLanguageModel`, which lets you opt into Foundation Models use cases and guardrails from React Native.
 
 ### `useLanguageModel(config)`
 
@@ -119,6 +125,24 @@ Lower-level hook for streaming responses.
 ### `checkFoundationModelsAvailability()`
 
 Check if Apple Intelligence is available on the device.
+
+The returned object also includes:
+
+- `contextSize`: current library context budget in tokens
+- `modelFamily`: `'26.0-26.3'` or `'26.4+'` based on the OS version
+
+### `getFoundationModelsModelFamily()`
+
+Returns the Foundation Models family for the current OS version: `'26.0-26.3'` or `'26.4+'`.
+
+### `getFoundationModelsContextSize()`
+
+Returns the library's current context budget in tokens. Apple documents a 4,096-token context window for the on-device model in iOS 26.0 through 26.3, so the library currently surfaces that value until it can be wired to the native `SystemLanguageModel.contextSize` API with an iOS 26.4 SDK.
+
+## Foundation Models 26.4 Notes
+
+- Apple’s current docs split the on-device model into two version families: `26.0-26.3` and `26.4+`. The library exposes this as `modelFamily` so apps can version prompts when model behavior changes.
+- Exact native token measurement with `SystemLanguageModel.tokenCount(for:)` is not compiled into this branch yet because the installed Xcode SDK here is `iPhoneOS26.2`, which does not expose that symbol. Once the project moves to an SDK that includes the 26.4 APIs, the JS surface can adopt the native token counter without another breaking API change.
 
 ## Development
 

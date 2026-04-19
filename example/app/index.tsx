@@ -1,7 +1,12 @@
 import { useCallback, useState } from 'react'
-import { createTool, LanguageModelSession } from 'react-native-foundation-models'
+import {
+  createTool,
+  getFoundationModelsContextSize,
+  LanguageModelSession,
+} from 'react-native-foundation-models'
 import { z } from 'zod'
 import { WeatherDemo } from '@/components/WeatherDemo'
+import { getTokenMetrics, type TokenMetrics } from '@/utils/tokenMetrics'
 import { weatherResult } from '@/utils/weatherResult'
 
 const WEATHER_API_KEY = process.env.EXPO_PUBLIC_WEATHER_API_KEY
@@ -38,25 +43,45 @@ const session = new LanguageModelSession({
   instructions: 'You are a helpful assistant',
   tools: [weatherTool],
 })
+const contextSize = getFoundationModelsContextSize()
 
 export default function IndexScreen() {
   const [result, setResult] = useState('')
   const [loading, setLoading] = useState(false)
+  const [tokenMetrics, setTokenMetrics] = useState<TokenMetrics>()
+  const [contextReset, setContextReset] = useState(false)
 
   const handleSubmit = useCallback(async (prompt: string) => {
     setLoading(true)
     setResult('')
+    setTokenMetrics(undefined)
+    setContextReset(false)
 
     try {
       const fullResponse = await session.respond(prompt)
       setResult(fullResponse)
+      setTokenMetrics(getTokenMetrics(prompt, fullResponse))
+      setContextReset(session.wasContextReset)
     } catch (error) {
       console.error('Failed to get response:', error)
       setResult('Error: Failed to get response')
+      setTokenMetrics(undefined)
+      setContextReset(session.wasContextReset)
     } finally {
       setLoading(false)
     }
   }, [])
 
-  return <WeatherDemo response={result} isLoading={loading} onSubmit={handleSubmit} />
+  return (
+    <WeatherDemo
+      response={result}
+      isLoading={loading}
+      onSubmit={handleSubmit}
+      metrics={{
+        contextSize,
+        tokens: tokenMetrics,
+        contextReset,
+      }}
+    />
+  )
 }
