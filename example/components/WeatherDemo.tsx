@@ -65,12 +65,16 @@ export function WeatherDemo({
       <View style={styles.container}>
         <View style={styles.responseCard}>
           <Text style={styles.responseLabel}>Latest response</Text>
-          <Text style={styles.title}>{response || 'Ask about the weather to start a session.'}</Text>
+          <Text style={styles.title}>
+            {response || 'Ask about the weather to start a session.'}
+          </Text>
         </View>
 
         <View style={styles.metricsCard}>
           <Text style={styles.metricsTitle}>Session usage</Text>
-          <Text style={styles.metricsNote}>Token counts are estimated on this SDK build.</Text>
+          <Text style={styles.metricsNote}>
+            Token counts are estimated on this SDK build.
+          </Text>
           <Text style={styles.metricText}>
             Context window: {formatNumber(metrics?.contextSize)} tokens
           </Text>
@@ -84,7 +88,9 @@ export function WeatherDemo({
             Estimated total tokens: {formatNumber(metrics?.tokens?.totalTokens)}
           </Text>
           {metrics?.contextReset ? (
-            <Text style={styles.resetText}>Context was summarized and reset after reaching the limit.</Text>
+            <Text style={styles.resetText}>
+              Context was summarized and reset after reaching the limit.
+            </Text>
           ) : null}
         </View>
 
