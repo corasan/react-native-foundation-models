@@ -20,10 +20,10 @@ namespace margelo::nitro::rnfoundationmodels { struct LanguageModelSessionConfig
 namespace margelo::nitro::rnfoundationmodels { struct ToolDefinition; }
 
 #include <string>
+#include <optional>
 #include <memory>
 #include "HybridLanguageModelSessionSpec.hpp"
 #include "LanguageModelSessionConfig.hpp"
-#include <optional>
 #include "ToolDefinition.hpp"
 #include <vector>
 #include <NitroModules/AnyMap.hpp>
@@ -81,6 +81,10 @@ namespace margelo::nitro::rnfoundationmodels {
     }
     inline std::string getAvailabilityStatus() noexcept override {
       auto __result = _swiftPart.getAvailabilityStatus();
+      return __result;
+    }
+    inline std::optional<double> getContextSize() noexcept override {
+      auto __result = _swiftPart.getContextSize();
       return __result;
     }
 

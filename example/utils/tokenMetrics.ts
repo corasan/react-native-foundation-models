@@ -1,12 +1,15 @@
+import type { LanguageModelSession } from 'react-native-foundation-models'
+
 export interface TokenMetrics {
   promptTokens: number
   responseTokens: number
   totalTokens: number
+  estimated: boolean
 }
 
 /**
- * Approximate token count for demo purposes until the native token counter
- * is available on the SDK used by this branch.
+ * Fallback approximation used on iOS < 26.4 where the native token counter
+ * is not available.
  */
 export function estimateTokenCount(text: string): number {
   const normalized = text.trim()
@@ -18,13 +21,32 @@ export function estimateTokenCount(text: string): number {
   return Math.ceil(normalized.length / 4)
 }
 
-export function getTokenMetrics(prompt: string, response: string): TokenMetrics {
-  const promptTokens = estimateTokenCount(prompt)
-  const responseTokens = estimateTokenCount(response)
+export async function getTokenMetrics(
+  session: LanguageModelSession,
+  prompt: string,
+  response: string,
+): Promise<TokenMetrics> {
+  try {
+    const [promptTokens, responseTokens] = await Promise.all([
+      session.tokenCount(prompt),
+      session.tokenCount(response),
+    ])
 
-  return {
-    promptTokens,
-    responseTokens,
-    totalTokens: promptTokens + responseTokens,
+    return {
+      promptTokens,
+      responseTokens,
+      totalTokens: promptTokens + responseTokens,
+      estimated: false,
+    }
+  } catch {
+    const promptTokens = estimateTokenCount(prompt)
+    const responseTokens = estimateTokenCount(response)
+
+    return {
+      promptTokens,
+      responseTokens,
+      totalTokens: promptTokens + responseTokens,
+      estimated: true,
+    }
   }
 }

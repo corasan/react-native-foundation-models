@@ -31,6 +31,14 @@ namespace margelo::nitro::rnfoundationmodels::bridge::swift {
     };
   }
   
+  // pragma MARK: std::function<void(double /* result */)>
+  Func_void_double create_Func_void_double(void* NON_NULL swiftClosureWrapper) noexcept {
+    auto swiftClosure = RNFoundationModels::Func_void_double::fromUnsafe(swiftClosureWrapper);
+    return [swiftClosure = std::move(swiftClosure)](double result) mutable -> void {
+      swiftClosure.call(result);
+    };
+  }
+  
   // pragma MARK: std::shared_ptr<HybridLanguageModelSessionSpec>
   std::shared_ptr<HybridLanguageModelSessionSpec> create_std__shared_ptr_HybridLanguageModelSessionSpec_(void* NON_NULL swiftUnsafePointer) noexcept {
     RNFoundationModels::HybridLanguageModelSessionSpec_cxx swiftPart = RNFoundationModels::HybridLanguageModelSessionSpec_cxx::fromUnsafe(swiftUnsafePointer);

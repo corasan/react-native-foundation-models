@@ -11,6 +11,7 @@ public enum AppleAIError: Error, LocalizedError, CustomStringConvertible {
     case sessionStreamingError(Error)
     case contextExceeded
     case unsupportedPlatform(String)
+    case tokenCountError(Error)
     
     public var errorDescription: String? {
         switch self {
@@ -34,6 +35,8 @@ public enum AppleAIError: Error, LocalizedError, CustomStringConvertible {
             return "Context window size exceeded, session recreated with conversation summary"
         case .unsupportedPlatform(let message):
             return message
+        case .tokenCountError(let error):
+            return "Token count failed: \(error.localizedDescription)"
         }
     }
     
@@ -63,6 +66,8 @@ public enum AppleAIError: Error, LocalizedError, CustomStringConvertible {
             return "CONTEXT_EXCEEDED"
         case .unsupportedPlatform:
             return "UNSUPPORTED_PLATFORM"
+        case .tokenCountError:
+            return "TOKEN_COUNT_ERROR"
         }
     }
 }

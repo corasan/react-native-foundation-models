@@ -80,11 +80,16 @@ export function getFoundationModelsModelFamily():
   return '26.0-26.3'
 }
 
+/**
+ * Returns the default system language model's context window size in tokens.
+ *
+ * Backed by `SystemLanguageModel.contextSize`, which is only available on
+ * iOS 26.4 or later. Returns `undefined` on earlier versions or non-iOS
+ * platforms.
+ */
 export function getFoundationModelsContextSize(): number | undefined {
   try {
-    return LanguageModelSessionFactory.isAvailable || Platform.OS === 'ios'
-      ? 4096
-      : undefined
+    return LanguageModelSessionFactory.contextSize
   } catch (_error) {
     return undefined
   }
@@ -178,6 +183,16 @@ export class LanguageModelSession {
    */
   streamResponse(prompt: string, onChunk: (chunk: string) => void): Promise<string> {
     return this.session.streamResponse(prompt, onChunk)
+  }
+
+  /**
+   * Returns the number of tokens the provided prompt consumes for this session's model.
+   *
+   * Note: This API is only available on iOS 26.4 or later. On earlier versions
+   * the returned promise will reject with an `UNSUPPORTED_PLATFORM` error.
+   */
+  tokenCount(prompt: string): Promise<number> {
+    return this.session.tokenCount(prompt)
   }
 
   get wasContextReset(): boolean {

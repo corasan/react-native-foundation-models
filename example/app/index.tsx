@@ -60,7 +60,7 @@ export default function IndexScreen() {
     try {
       const fullResponse = await session.respond(prompt)
       setResult(fullResponse)
-      setTokenMetrics(getTokenMetrics(prompt, fullResponse))
+      setTokenMetrics(await getTokenMetrics(session, prompt, fullResponse))
       setContextReset(session.wasContextReset)
     } catch (error) {
       console.error('Failed to get response:', error)

@@ -62,7 +62,9 @@ export default function HookDemoScreen() {
       setTokenMetrics(undefined)
       setContextReset(false)
       const fullResponse = await send(prompt)
-      setTokenMetrics(getTokenMetrics(prompt, fullResponse))
+      if (session) {
+        setTokenMetrics(await getTokenMetrics(session, prompt, fullResponse))
+      }
       setContextReset(Boolean(session?.wasContextReset))
     } catch (err) {
       console.error('Failed to send prompt:', err)
