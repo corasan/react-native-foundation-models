@@ -57,6 +57,19 @@ class HybridLanguageModelSessionFactory: HybridLanguageModelSessionFactorySpec {
         }
     }
 
+    /**
+     * Reports the default system language model's context window size.
+     *
+     * Note: `SystemLanguageModel.contextSize` is only available starting iOS 26.4.
+     * Returns `nil` on earlier versions.
+     */
+    var contextSize: Double? {
+        if #available(iOS 26.4, *) {
+            return Double(SystemLanguageModel.default.contextSize)
+        }
+        return nil
+    }
+
     @available(iOS 26.0, *)
     private static func makeModel(
         useCase: String?,

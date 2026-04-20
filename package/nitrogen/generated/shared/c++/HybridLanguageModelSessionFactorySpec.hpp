@@ -19,6 +19,7 @@ namespace margelo::nitro::rnfoundationmodels { class HybridLanguageModelSessionS
 namespace margelo::nitro::rnfoundationmodels { struct LanguageModelSessionConfig; }
 
 #include <string>
+#include <optional>
 #include <memory>
 #include "HybridLanguageModelSessionSpec.hpp"
 #include "LanguageModelSessionConfig.hpp"
@@ -52,6 +53,7 @@ namespace margelo::nitro::rnfoundationmodels {
       // Properties
       virtual bool getIsAvailable() = 0;
       virtual std::string getAvailabilityStatus() = 0;
+      virtual std::optional<double> getContextSize() = 0;
 
     public:
       // Methods

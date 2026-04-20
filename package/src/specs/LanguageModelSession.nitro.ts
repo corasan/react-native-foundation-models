@@ -25,4 +25,5 @@ export interface LanguageModelSessionFactory extends HybridObject<{ ios: 'swift'
   create(config: LanguageModelSessionConfig): LanguageModelSession
   readonly isAvailable: boolean
   readonly availabilityStatus: string
+  readonly contextSize?: number
 }

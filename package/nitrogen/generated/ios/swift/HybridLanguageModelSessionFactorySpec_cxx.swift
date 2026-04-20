@@ -134,6 +134,19 @@ open class HybridLanguageModelSessionFactorySpec_cxx {
       return std.string(self.__implementation.availabilityStatus)
     }
   }
+  
+  public final var contextSize: bridge.std__optional_double_ {
+    @inline(__always)
+    get {
+      return { () -> bridge.std__optional_double_ in
+        if let __unwrappedValue = self.__implementation.contextSize {
+          return bridge.create_std__optional_double_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
+    }
+  }
 
   // Methods
   @inline(__always)

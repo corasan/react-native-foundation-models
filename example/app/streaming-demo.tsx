@@ -64,7 +64,7 @@ export default function StreamingDemoScreen() {
       setContextReset(false)
 
       const fullResponse = await streamResponse(prompt)
-      setTokenMetrics(getTokenMetrics(prompt, fullResponse))
+      setTokenMetrics(await getTokenMetrics(session, prompt, fullResponse))
       setContextReset(session.wasContextReset)
     },
     [streamResponse],
