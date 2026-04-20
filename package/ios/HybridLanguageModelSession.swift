@@ -135,6 +135,27 @@ class HybridLanguageModelSession: HybridLanguageModelSessionSpec {
     var wasContextReset: Bool {
         return contextWasReset
     }
+
+    /**
+     * Returns the number of tokens the provided prompt consumes for this session's model.
+     *
+     * Note: `SystemLanguageModel.tokenCount(for:)` is only available starting iOS 26.4.
+     */
+    @available(iOS 26.0, *)
+    func tokenCount(prompt: String) throws -> Promise<Double> {
+        return Promise.async {
+            if #available(iOS 26.4, *) {
+                do {
+                    let count = try await self.model.tokenCount(for: prompt)
+                    return Double(count)
+                } catch {
+                    throw AppleAIError.tokenCountError(error)
+                }
+            } else {
+                throw AppleAIError.unsupportedPlatform("tokenCount requires iOS 26.4 or later")
+            }
+        }
+    }
     
     @available(iOS 26.0, *)
     private func createNewSessionWithSummary(previousSession: LanguageModelSession) async throws -> LanguageModelSession {

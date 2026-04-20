@@ -12,6 +12,7 @@ public protocol HybridLanguageModelSessionFactorySpec_protocol: HybridObject {
   // Properties
   var isAvailable: Bool { get }
   var availabilityStatus: String { get }
+  var contextSize: Double? { get }
 
   // Methods
   func create(config: LanguageModelSessionConfig) throws -> (any HybridLanguageModelSessionSpec)

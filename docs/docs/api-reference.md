@@ -45,6 +45,29 @@ streamResponse(prompt: string, onChunk: (responseSoFar: string) => void): Promis
 - `prompt: string` - The user's message
 - `onChunk: (responseSoFar: string) => void` - Called with the full streamed response so far
 
+#### `tokenCount(prompt)`
+
+Returns the number of tokens the provided text consumes for this session's model.
+
+```typescript
+tokenCount(prompt: string): Promise<number>
+```
+
+**Parameters**:
+- `prompt: string` - The text to measure
+
+**Availability**: iOS 26.4 or later. On earlier versions the returned promise rejects with an `UNSUPPORTED_PLATFORM` error.
+
+### Instance Properties
+
+#### `wasContextReset`
+
+Boolean flag indicating whether the session's context was automatically summarized and reset after reaching the model's context limit. Useful for informing the user that earlier turns may no longer be in context.
+
+```typescript
+readonly wasContextReset: boolean
+```
+
 ## Functions
 
 ### `checkFoundationModelsAvailability()`
@@ -73,7 +96,7 @@ function getFoundationModelsModelFamily(): '26.0-26.3' | '26.4+' | undefined
 function getFoundationModelsContextSize(): number | undefined
 ```
 
-The library currently reports Apple’s documented 4,096-token context window for the on-device model on iOS 26.0 through 26.3. Direct bridging to the native `SystemLanguageModel.contextSize` and `tokenCount(for:)` APIs requires an iOS 26.4 SDK.
+On iOS 26.4 or later this is bridged directly to the native `SystemLanguageModel.contextSize`. On iOS 26.0 through 26.3 (where the native API is unavailable) it returns `undefined`; Apple documents a 4,096-token context window for that model family.
 
 ## Hooks
 

@@ -43,7 +43,7 @@ const availability = checkFoundationModelsAvailability();
 console.log(availability.status); // 'available' or 'unavailable.xxx'
 console.log(availability.message); // Human-readable message
 console.log(availability.modelFamily); // '26.0-26.3' or '26.4+'
-console.log(availability.contextSize); // 4096 on current SDK-backed builds
+console.log(availability.contextSize); // Native context size on iOS 26.4+, undefined otherwise
 ```
 
 ### Availability States

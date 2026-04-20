@@ -16,6 +16,7 @@ namespace margelo::nitro::rnfoundationmodels {
     registerHybrids(this, [](Prototype& prototype) {
       prototype.registerHybridGetter("isAvailable", &HybridLanguageModelSessionFactorySpec::getIsAvailable);
       prototype.registerHybridGetter("availabilityStatus", &HybridLanguageModelSessionFactorySpec::getAvailabilityStatus);
+      prototype.registerHybridGetter("contextSize", &HybridLanguageModelSessionFactorySpec::getContextSize);
       prototype.registerHybridMethod("create", &HybridLanguageModelSessionFactorySpec::create);
     });
   }
