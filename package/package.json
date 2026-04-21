@@ -1,20 +1,19 @@
 {
   "name": "react-native-foundation-models",
   "version": "0.1.0",
-  "description": "A React Native Nitro module",
+  "description": "React Native Nitro module for Apple's Foundation Models (Apple Intelligence). Enables on-device AI with tool calling and streaming responses on iOS 26.0+.",
   "main": "./lib/module/index.js",
   "module": "./lib/module/index.js",
   "types": "./lib/typescript/index.d.ts",
   "react-native": "src/index.ts",
   "source": "./src/index.ts",
-  "author": "Developer",
+  "author": "Henry Paulino <me@henrypl.com>",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf android/build node_modules/**/android/build lib",
+    "clean": "rm -rf lib",
     "build": "rm -rf lib && bun typecheck && bob build",
     "specs": "bunx nitrogen --logLevel=\"debug\"",
-    "generate": "node lib/commonjs/cli.js",
-    "generate:dev": "ts-node src/cli.ts",
+    "prepublishOnly": "bun run build",
     "release": "release-it"
   },
   "keywords": [
@@ -35,21 +34,12 @@
     "src",
     "lib",
     "nitrogen",
-    "cpp",
     "ios",
-    "plugin",
     "!**/__tests__",
     "!**/__fixtures__",
     "!**/__mocks__",
     "react-native.config.js",
-    "android/build.gradle",
-    "android/gradle.properties",
-    "android/CMakeLists.txt",
-    "android/src",
-    "app.plugin.js",
     "*.podspec",
-    "generable.config.example.ts",
-    "bin",
     "README.md"
   ],
   "dependencies": {
@@ -61,8 +51,7 @@
     "@release-it/conventional-changelog": "^10.0.1",
     "nitrogen": "0.35.4",
     "react-native-builder-bob": "^0.40.13",
-    "release-it": "^19.0.4",
-    "ts-node": "^10.9.2"
+    "release-it": "^19.0.4"
   },
   "peerDependencies": {
     "react": "*",
