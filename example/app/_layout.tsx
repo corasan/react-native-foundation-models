@@ -15,12 +15,6 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        {/*
-         * Native tabs render a real UITabBarController, so on iOS 26 the bar is
-         * genuine Liquid Glass and follows the system appearance on its own.
-         * `minimizeBehavior` is the iOS 26 behaviour where the bar collapses out
-         * of the way while you scroll and returns when you scroll back up.
-         */}
         <NativeTabs minimizeBehavior="onScrollDown" tintColor={Colors[theme].tint}>
           <NativeTabs.Trigger name="index">
             <NativeTabs.Trigger.Icon

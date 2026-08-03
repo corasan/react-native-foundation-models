@@ -5,20 +5,8 @@ import { formatNumber } from '@/utils/formatNumber'
 
 export type ContextPressure = 'ok' | 'warn' | 'critical'
 
-/**
- * Maps how full the context window is to a severity level, which drives the
- * meter's colour. The session summarises and resets itself once the window
- * fills, so "critical" means "a reset is imminent", not "something is wrong".
- *
- * TODO(henry): tune these thresholds.
- * This is a judgement call rather than a fact, and it changes how the demo
- * feels. Warning early (say 0.6) makes context pressure legible while there is
- * still room to act, but leaves the meter amber for most of a normal session,
- * which reads as noise. Warning late (say 0.9) keeps the meter calm but gives
- * almost no notice before a reset drops conversational history.
- */
 export function getContextPressure(fraction: number): ContextPressure {
-  if (fraction >= 0.9) return 'critical'
+  if (fraction >= 0.88) return 'critical'
   if (fraction >= 0.75) return 'warn'
   return 'ok'
 }
