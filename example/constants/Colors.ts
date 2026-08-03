@@ -1,8 +1,3 @@
-/**
- * Semantic colours mirroring Apple's system palette, so the demo reads as a
- * first-party iOS 26 app. Both schemes must declare the same keys — the
- * `useThemeColor` signature in components/Themed.tsx keys off their intersection.
- */
 const tintColorLight = '#007AFF' // systemBlue (light)
 const tintColorDark = '#0A84FF' // systemBlue (dark)
 

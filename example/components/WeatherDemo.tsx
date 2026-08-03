@@ -36,10 +36,6 @@ interface WeatherDemoProps {
 
 const glassAvailable = isLiquidGlassAvailable()
 
-/**
- * Breathing room kept below the input bar — above the keyboard when it is open,
- * and above the floating tab bar when it is not.
- */
 const INPUT_BAR_GAP = 16
 
 export function WeatherDemo({
