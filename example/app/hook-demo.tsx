@@ -81,6 +81,8 @@ export default function HookDemoScreen() {
 
   return (
     <WeatherDemo
+      title="Hook"
+      subtitle="useLanguageModel lifecycle"
       response={response}
       isLoading={loading}
       error={error}

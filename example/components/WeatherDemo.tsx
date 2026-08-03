@@ -1,15 +1,19 @@
-import { useCallback, useState } from 'react'
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect'
+import { useCallback, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
   Keyboard,
-  KeyboardAvoidingView,
-  Platform,
+  View as PlainView,
+  ScrollView,
   StyleSheet,
   TextInput,
   TouchableOpacity,
 } from 'react-native'
-import { Text, View } from '@/components/Themed'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { ContextMeter } from '@/components/ContextMeter'
+import { Text, useThemeColor, View } from '@/components/Themed'
+import { useKeyboardLift } from '@/components/useKeyboardLift'
 import { formatNumber } from '@/utils/formatNumber'
 import type { TokenMetrics } from '@/utils/tokenMetrics'
 
@@ -26,7 +30,13 @@ interface WeatherDemoProps {
   onSubmit: (prompt: string) => Promise<void> | void
   onReset?: () => void
   metrics?: UsageMetrics
+  title?: string
+  subtitle?: string
 }
+
+const glassAvailable = isLiquidGlassAvailable()
+
+const INPUT_BAR_GAP = 16
 
 export function WeatherDemo({
   response,
@@ -35,14 +45,26 @@ export function WeatherDemo({
   onSubmit,
   onReset,
   metrics,
+  title = 'Foundation Models',
+  subtitle = 'On-device weather tool demo',
 }: WeatherDemoProps) {
   const [prompt, setPrompt] = useState('')
+  const insets = useSafeAreaInsets()
+  const inputBarRef = useRef<PlainView>(null)
+  const keyboardLift = useKeyboardLift(inputBarRef, INPUT_BAR_GAP)
+
+  const textColor = useThemeColor({}, 'text')
+  const mutedColor = useThemeColor({}, 'muted')
+  const borderColor = useThemeColor({}, 'border')
+  const cardColor = useThemeColor({}, 'card')
+  const tintColor = useThemeColor({}, 'tint')
+  const warnColor = useThemeColor({}, 'warn')
 
   const respond = useCallback(async () => {
     const nextPrompt = prompt.trim()
 
     if (!nextPrompt) {
-      Alert.alert('Error', 'Please enter a message')
+      Alert.alert('Empty prompt', 'Enter a question before sending.')
       return
     }
 
@@ -56,49 +78,86 @@ export function WeatherDemo({
     }
   }, [prompt, onSubmit])
 
+  const canSend = !isLoading && prompt.trim().length > 0
+  const InputSurface = glassAvailable ? GlassView : PlainView
+  const inputSurfaceProps = glassAvailable
+    ? { glassEffectStyle: 'regular' as const, isInteractive: true }
+    : { style: { backgroundColor: cardColor } }
+
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 12 : 0}
-      style={styles.container}
-    >
-      <View style={styles.container}>
-        <View style={styles.responseCard}>
-          <Text style={styles.responseLabel}>Latest response</Text>
-          <Text style={styles.title}>
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 12 }]}
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={[styles.eyebrow, { color: mutedColor }]}>
+          {subtitle.toUpperCase()}
+        </Text>
+        <Text style={styles.title}>{title}</Text>
+
+        <View style={[styles.card, { borderColor, backgroundColor: cardColor }]}>
+          <Text style={[styles.cardLabel, { color: mutedColor }]}>LATEST RESPONSE</Text>
+          <Text style={[styles.response, !response && { color: mutedColor }]}>
             {response || 'Ask about the weather to start a session.'}
           </Text>
         </View>
 
-        <View style={styles.metricsCard}>
-          <Text style={styles.metricsTitle}>Session usage</Text>
-          <Text style={styles.metricsNote}>
-            Token counts are estimated on this SDK build.
-          </Text>
-          <Text style={styles.metricText}>
-            Context window: {formatNumber(metrics?.contextSize)} tokens
-          </Text>
-          <Text style={styles.metricText}>
-            Estimated prompt tokens: {formatNumber(metrics?.tokens?.promptTokens)}
-          </Text>
-          <Text style={styles.metricText}>
-            Estimated response tokens: {formatNumber(metrics?.tokens?.responseTokens)}
-          </Text>
-          <Text style={styles.metricText}>
-            Estimated total tokens: {formatNumber(metrics?.tokens?.totalTokens)}
-          </Text>
+        <View style={[styles.card, { borderColor, backgroundColor: cardColor }]}>
+          <Text style={[styles.cardLabel, { color: mutedColor }]}>SESSION USAGE</Text>
+
+          <ContextMeter
+            used={metrics?.tokens?.totalTokens}
+            total={metrics?.contextSize}
+          />
+
+          <PlainView style={[styles.divider, { backgroundColor: borderColor }]} />
+
+          <MetricRow
+            label="Prompt tokens"
+            value={formatNumber(metrics?.tokens?.promptTokens)}
+            mutedColor={mutedColor}
+          />
+          <MetricRow
+            label="Response tokens"
+            value={formatNumber(metrics?.tokens?.responseTokens)}
+            mutedColor={mutedColor}
+          />
+          <MetricRow
+            label="Total tokens"
+            value={formatNumber(metrics?.tokens?.totalTokens)}
+            mutedColor={mutedColor}
+          />
+
+          {metrics?.tokens?.estimated === true ? (
+            <Text style={[styles.footnote, { color: mutedColor }]}>
+              Counts are estimated on this SDK build.
+            </Text>
+          ) : null}
+
           {metrics?.contextReset ? (
-            <Text style={styles.resetText}>
-              Context was summarized and reset after reaching the limit.
+            <Text style={[styles.footnote, { color: warnColor }]}>
+              Context reached the limit, so it was summarised and reset.
             </Text>
           ) : null}
         </View>
+      </ScrollView>
 
-        <View style={styles.loadingContainer}>
-          {isLoading && <ActivityIndicator size="small" />}
-        </View>
-
-        <View style={styles.inputContainer}>
+      <PlainView
+        ref={inputBarRef}
+        style={[
+          styles.inputBar,
+          {
+            // Must be a margin, not padding: `useKeyboardLift` measures this
+            // view's frame, and padding would sit inside that frame and be
+            // double-counted as overlap once the keyboard opens.
+            marginBottom: Math.max(insets.bottom, 12) + INPUT_BAR_GAP,
+            transform: [{ translateY: -keyboardLift }],
+          },
+        ]}
+      >
+        <InputSurface style={styles.inputSurface} {...(inputSurfaceProps as object)}>
           <TextInput
             value={prompt}
             onChangeText={text => {
@@ -110,122 +169,148 @@ export function WeatherDemo({
             }}
             returnKeyType="send"
             enablesReturnKeyAutomatically
-            style={styles.input}
-            placeholder="Ask about the weather..."
+            style={[styles.input, { color: textColor }]}
+            placeholder="Ask about the weather…"
+            placeholderTextColor={mutedColor}
             editable={!isLoading}
+            accessibilityLabel="Prompt"
           />
-          <TouchableOpacity
-            onPress={() => {
-              void respond()
-            }}
-            disabled={isLoading || !prompt.trim()}
-            style={[
-              styles.button,
-              (isLoading || !prompt.trim()) && styles.buttonDisabled,
-            ]}
-          >
-            <Text
-              style={[
-                styles.buttonText,
-                (isLoading || !prompt.trim()) && styles.buttonTextDisabled,
-              ]}
-            >
-              {isLoading ? '...' : 'Send'}
+        </InputSurface>
+
+        <TouchableOpacity
+          onPress={() => {
+            void respond()
+          }}
+          disabled={!canSend}
+          accessibilityRole="button"
+          accessibilityLabel="Send prompt"
+          accessibilityState={{ disabled: !canSend }}
+          style={[
+            styles.sendButton,
+            { backgroundColor: canSend ? tintColor : cardColor },
+            !canSend && { borderWidth: StyleSheet.hairlineWidth, borderColor },
+          ]}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color={mutedColor} />
+          ) : (
+            <Text style={[styles.sendGlyph, { color: canSend ? '#FFFFFF' : mutedColor }]}>
+              ↑
             </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </KeyboardAvoidingView>
+          )}
+        </TouchableOpacity>
+      </PlainView>
+    </View>
+  )
+}
+
+function MetricRow({
+  label,
+  value,
+  mutedColor,
+}: {
+  label: string
+  value: string
+  mutedColor: string
+}) {
+  return (
+    <PlainView style={styles.metricRow}>
+      <Text style={[styles.metricLabel, { color: mutedColor }]}>{label}</Text>
+      <Text style={styles.metricValue}>{value}</Text>
+    </PlainView>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-end',
-    padding: 16,
   },
-  responseCard: {
-    width: '100%',
-    borderWidth: 1,
-    borderColor: '#e3e3e3',
-    borderRadius: 20,
-    padding: 16,
-    marginBottom: 12,
+  scroll: {
+    flex: 1,
   },
-  responseLabel: {
-    fontSize: 13,
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+    gap: 16,
+  },
+  eyebrow: {
+    fontSize: 12,
     fontWeight: '600',
-    opacity: 0.6,
-    marginBottom: 8,
+    letterSpacing: 0.8,
   },
   title: {
-    fontSize: 18,
-    lineHeight: 26,
+    fontSize: 34,
+    fontWeight: '700',
+    letterSpacing: 0.37,
+    marginTop: -8,
   },
-  metricsCard: {
-    width: '100%',
-    borderWidth: 1,
-    borderColor: '#e3e3e3',
-    borderRadius: 20,
+  card: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 16,
     padding: 16,
+  },
+  cardLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.6,
     marginBottom: 12,
   },
-  metricsTitle: {
-    fontSize: 15,
-    fontWeight: '700',
+  response: {
+    fontSize: 17,
+    lineHeight: 24,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginTop: 16,
     marginBottom: 4,
   },
-  metricsNote: {
-    fontSize: 12,
-    lineHeight: 18,
-    opacity: 0.65,
-    marginBottom: 8,
+  metricRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    paddingVertical: 6,
   },
-  metricText: {
-    fontSize: 14,
-    lineHeight: 20,
+  metricLabel: {
+    fontSize: 15,
   },
-  resetText: {
-    marginTop: 8,
+  metricValue: {
+    fontSize: 15,
+    fontVariant: ['tabular-nums'],
+  },
+  footnote: {
     fontSize: 13,
     lineHeight: 18,
-    color: '#cc7a00',
+    marginTop: 12,
   },
-  loadingContainer: {
-    height: 40,
-    justifyContent: 'center',
-  },
-  inputContainer: {
+  inputBar: {
     flexDirection: 'row',
-    gap: 12,
     alignItems: 'center',
-    width: '100%',
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+  },
+  inputSurface: {
+    flex: 1,
+    borderRadius: 22,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    minHeight: 44,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#e3e3e3',
-    borderRadius: 100,
-    flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+    fontSize: 17,
   },
-  button: {
-    backgroundColor: 'dodgerblue',
-    borderRadius: 100,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+  sendButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  buttonDisabled: {
-    backgroundColor: '#ccc',
-  },
-  buttonText: {
-    color: 'white',
+  sendGlyph: {
+    fontSize: 20,
     fontWeight: '600',
-    fontSize: 16,
-  },
-  buttonTextDisabled: {
-    color: '#888',
+    lineHeight: 24,
   },
 })

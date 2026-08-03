@@ -18,7 +18,7 @@
     "specs:pod": "bun --cwd ./package specs && cd example/ios && pod install && cd ../../",
     "build": "bun --cwd package build",
     "release": "bun --cwd package release",
-    "prebuild:ios": "bunx --cwd ./example expo prebuild -p ios",
+    "prebuild:ios": "bun --cwd example prebuild:ios",
     "docs:dev": "bun --cwd docs start",
     "docs:build": "bun --cwd docs build",
     "docs:serve": "bun --cwd docs serve"
