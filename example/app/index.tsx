@@ -74,6 +74,8 @@ export default function IndexScreen() {
 
   return (
     <WeatherDemo
+      title="Foundation Models"
+      subtitle="On-device weather tool"
       response={result}
       isLoading={loading}
       onSubmit={handleSubmit}

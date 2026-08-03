@@ -78,6 +78,8 @@ export default function StreamingDemoScreen() {
 
   return (
     <WeatherDemo
+      title="Streaming"
+      subtitle="Tokens as they arrive"
       response={response}
       isLoading={isStreaming}
       error={error}
