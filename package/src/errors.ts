@@ -4,12 +4,25 @@ export interface AppleAIErrorInfo {
   details?: Record<string, any>
 }
 
+export interface NativeErrorContext {
+  fallbackCode?: string
+  operation?: string
+}
+
+const NATIVE_ERROR_PREFIX = /\[([A-Z][A-Z0-9_]*)\]\s*(.*)$/s
+const STABLE_ERROR_CODE = /^[A-Z][A-Z0-9_]*$/
+
 export class AppleAIError extends Error {
   public readonly code: string
   public readonly details?: Record<string, any>
 
-  constructor(code: string, message: string, details?: Record<string, any>) {
-    super(message)
+  constructor(
+    code: string,
+    message: string,
+    details?: Record<string, any>,
+    options?: ErrorOptions,
+  ) {
+    super(message, options)
     this.name = 'AppleAIError'
     this.code = code
     this.details = details
@@ -94,13 +107,61 @@ export class UnsupportedPlatformError extends AppleAIError {
 export function isAppleAIError(error: any): error is AppleAIError {
   return (
     error instanceof AppleAIError ||
-    (error && typeof error === 'object' && 'code' in error && 'message' in error)
+    (error?.name === 'AppleAIError' &&
+      typeof error.code === 'string' &&
+      typeof error.message === 'string')
   )
 }
 
-export function parseNativeError(error: any): AppleAIError {
-  if (isAppleAIError(error)) {
+function getNativeErrorDetails(
+  error: any,
+  context?: NativeErrorContext,
+): Record<string, any> | undefined {
+  const details: Record<string, any> = {}
+
+  if (context?.operation) {
+    details.operation = context.operation
+  }
+
+  if (error && typeof error === 'object') {
+    if (typeof error.name === 'string') {
+      details.nativeName = error.name
+    }
+    if (typeof error.code === 'string' || typeof error.code === 'number') {
+      details.nativeCode = error.code
+    }
+    if (typeof error.domain === 'string') {
+      details.nativeDomain = error.domain
+    }
+  }
+
+  return Object.keys(details).length > 0 ? details : undefined
+}
+
+function parseBridgeMessage(message: string): {
+  code?: string
+  message: string
+} {
+  const match = message.match(NATIVE_ERROR_PREFIX)
+  if (!match) {
+    return { message }
+  }
+
+  return {
+    code: match[1],
+    message: match[2] || message,
+  }
+}
+
+export function parseNativeError(error: any, context?: NativeErrorContext): AppleAIError {
+  if (error instanceof AppleAIError) {
     return error
+  }
+
+  if (isAppleAIError(error)) {
+    return new AppleAIError(error.code, error.message, error.details, {
+      cause: error,
+    })
   }
 
   if (typeof error === 'string') {
@@ -117,14 +178,38 @@ export function parseNativeError(error: any): AppleAIError {
     } catch {
       // Not JSON, treat as plain error message
     }
-    return new AppleAIError('UNKNOWN_ERROR', error)
+    const parsedMessage = parseBridgeMessage(error)
+    return new AppleAIError(
+      parsedMessage.code ?? context?.fallbackCode ?? 'UNKNOWN_ERROR',
+      parsedMessage.message,
+      getNativeErrorDetails(error, context),
+      { cause: error },
+    )
   }
 
   if (error && typeof error === 'object') {
-    const message = error.message || error.localizedDescription || 'Unknown error'
-    const code = error.code || 'UNKNOWN_ERROR'
-    return new AppleAIError(code, message, { originalError: error })
+    const nativeMessage =
+      (typeof error.message === 'string' && error.message) ||
+      (typeof error.localizedDescription === 'string' && error.localizedDescription) ||
+      'Unknown native error'
+    const parsedMessage = parseBridgeMessage(nativeMessage)
+    const nativeCode =
+      typeof error.code === 'string' && STABLE_ERROR_CODE.test(error.code)
+        ? error.code
+        : undefined
+
+    return new AppleAIError(
+      parsedMessage.code ?? nativeCode ?? context?.fallbackCode ?? 'UNKNOWN_ERROR',
+      parsedMessage.message,
+      getNativeErrorDetails(error, context),
+      { cause: error },
+    )
   }
 
-  return new AppleAIError('UNKNOWN_ERROR', 'An unknown error occurred')
+  return new AppleAIError(
+    context?.fallbackCode ?? 'UNKNOWN_ERROR',
+    'An unknown error occurred',
+    getNativeErrorDetails(error, context),
+    { cause: error },
+  )
 }

@@ -9,6 +9,7 @@ class HybridLanguageModelSession: HybridLanguageModelSessionSpec {
     private var jsTools: [ToolDefinition] = []
     private var contextWasReset: Bool = false
     private let model: SystemLanguageModel
+    private let stateLock = NSLock()
     
     /**
      * Initializes the wrapper with a FoundationModels session configured
@@ -66,24 +67,24 @@ class HybridLanguageModelSession: HybridLanguageModelSessionSpec {
                 return ""
             }
 
-            self.isResponding = true
+            try self.ensureModelIsAvailable()
+            try self.beginResponse(using: modelSession)
+            defer { self.endResponse() }
 
             do {
                 let result = try await modelSession.respond(to: prompt)
-                self.isResponding = false
                 return result.content
             } catch LanguageModelSession.GenerationError.exceededContextWindowSize {
-                self.isResponding = false
-                let newSession = try await self.createNewSessionWithSummary(previousSession: modelSession)
-                self.session = newSession
-                self.contextWasReset = true
+                try await self.recoverFromContextOverflow(previousSession: modelSession)
                 throw AppleAIError.contextExceeded
             } catch let error as AppleAIError {
-                self.isResponding = false
                 throw error
+            } catch let error as LanguageModelSession.ToolCallError {
+                throw Self.mapToolCallError(error)
+            } catch let error as LanguageModelSession.GenerationError {
+                throw Self.mapGenerationError(error, operation: "response")
             } catch {
-                self.isResponding = false
-                throw AppleAIError.sessionStreamingError(error)
+                throw AppleAIError.sessionResponseError(error)
             }
         }
     }
@@ -103,29 +104,27 @@ class HybridLanguageModelSession: HybridLanguageModelSessionSpec {
                 return ""
             }
             
-            self.isResponding = true
+            try self.ensureModelIsAvailable()
+            try self.beginResponse(using: modelSession)
+            defer { self.endResponse() }
             
             do {
                 let stream = modelSession.streamResponse(to: prompt)
-
-                for try await token in stream {
-                    onStream(token.content)
-                }
-                
-                let result = try await stream.collect()
-                self.isResponding = false
-                return result.content
+                return try await consumeStreamingResponse(
+                    stream,
+                    content: { $0.content },
+                    onContent: onStream
+                )
             } catch LanguageModelSession.GenerationError.exceededContextWindowSize {
-                self.isResponding = false
-                let newSession = try await self.createNewSessionWithSummary(previousSession: modelSession)
-                self.session = newSession
-                self.contextWasReset = true
+                try await self.recoverFromContextOverflow(previousSession: modelSession)
                 throw AppleAIError.contextExceeded
             } catch let error as AppleAIError {
-                self.isResponding = false
                 throw error
+            } catch let error as LanguageModelSession.ToolCallError {
+                throw Self.mapToolCallError(error)
+            } catch let error as LanguageModelSession.GenerationError {
+                throw Self.mapGenerationError(error, operation: "streaming")
             } catch {
-                self.isResponding = false
                 throw AppleAIError.sessionStreamingError(error)
             }
         }
@@ -171,6 +170,118 @@ class HybridLanguageModelSession: HybridLanguageModelSessionSpec {
             tools: self.tools,
             instructions: enhancedInstructions
         )
+    }
+
+    @available(iOS 26.0, *)
+    private func recoverFromContextOverflow(previousSession: LanguageModelSession) async throws {
+        do {
+            let newSession = try await self.createNewSessionWithSummary(previousSession: previousSession)
+            self.session = newSession
+            self.contextWasReset = true
+        } catch {
+            throw AppleAIError.contextRecoveryFailed(error)
+        }
+    }
+
+    @available(iOS 26.0, *)
+    private func ensureModelIsAvailable() throws {
+        switch model.availability {
+        case .available:
+            return
+        case .unavailable(.deviceNotEligible):
+            throw AppleAIError.modelUnavailable("this device is not eligible for Apple Intelligence")
+        case .unavailable(.appleIntelligenceNotEnabled):
+            throw AppleAIError.modelUnavailable("Apple Intelligence is not enabled")
+        case .unavailable(.modelNotReady):
+            throw AppleAIError.modelUnavailable("the model is not ready")
+        case .unavailable(let reason):
+            throw AppleAIError.modelUnavailable("unknown reason (\(reason))")
+        }
+    }
+
+    @available(iOS 26.0, *)
+    private func beginResponse(using modelSession: LanguageModelSession) throws {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+
+        guard !isResponding && !modelSession.isResponding else {
+            throw AppleAIError.sessionBusy
+        }
+
+        isResponding = true
+    }
+
+    private func endResponse() {
+        stateLock.lock()
+        isResponding = false
+        stateLock.unlock()
+    }
+
+    @available(iOS 26.0, *)
+    private static func mapGenerationError(
+        _ error: LanguageModelSession.GenerationError,
+        operation: String
+    ) -> AppleAIError {
+        switch error {
+        case .exceededContextWindowSize:
+            return .contextExceeded
+        case .assetsUnavailable(let context):
+            return .generationError(
+                code: "ASSETS_UNAVAILABLE",
+                message: "Model assets are unavailable during \(operation): \(context.debugDescription)"
+            )
+        case .guardrailViolation(let context):
+            return .generationError(
+                code: "GUARDRAIL_VIOLATION",
+                message: "The request violated model guardrails during \(operation): \(context.debugDescription)"
+            )
+        case .unsupportedGuide(let context):
+            return .generationError(
+                code: "UNSUPPORTED_GUIDE",
+                message: "The request used an unsupported generation guide during \(operation): \(context.debugDescription)"
+            )
+        case .unsupportedLanguageOrLocale(let context):
+            return .generationError(
+                code: "UNSUPPORTED_LANGUAGE_OR_LOCALE",
+                message: "The request used an unsupported language or locale during \(operation): \(context.debugDescription)"
+            )
+        case .decodingFailure(let context):
+            return .generationError(
+                code: "DECODING_FAILURE",
+                message: "The model response could not be decoded during \(operation): \(context.debugDescription)"
+            )
+        case .rateLimited(let context):
+            return .generationError(
+                code: "RATE_LIMITED",
+                message: "The model rate-limited the \(operation) request: \(context.debugDescription)"
+            )
+        case .concurrentRequests(let context):
+            return .generationError(
+                code: "SESSION_BUSY",
+                message: "Another language model request was already in progress: \(context.debugDescription)"
+            )
+        case .refusal(_, let context):
+            return .generationError(
+                code: "REFUSAL",
+                message: "The model refused the \(operation) request: \(context.debugDescription)"
+            )
+        @unknown default:
+            return .generationError(
+                code: "GENERATION_ERROR",
+                message: "Model generation failed during \(operation): \(error.localizedDescription)"
+            )
+        }
+    }
+
+    @available(iOS 26.0, *)
+    private static func mapToolCallError(
+        _ error: LanguageModelSession.ToolCallError
+    ) -> AppleAIError {
+        if let appleAIError = error.underlyingError as? AppleAIError {
+            return appleAIError
+        }
+
+        return .toolCallError(error.underlyingError)
     }
     
     @available(iOS 26.0, *)

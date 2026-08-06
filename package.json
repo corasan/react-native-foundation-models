@@ -9,6 +9,8 @@
   "source": "./package/src/index",
   "author": "Developer",
   "scripts": {
+    "test": "bun --cwd package test",
+    "test:swift": "bun --cwd package test:swift",
     "typecheck": "bun tsc -p ./package --noEmit",
     "lint": "biome lint .",
     "format": "biome format --write .",

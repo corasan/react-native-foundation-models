@@ -9,6 +9,8 @@
   "source": "./src/index.ts",
   "author": "Henry Paulino <me@henrypl.com>",
   "scripts": {
+    "test": "bun test tests/*.test.ts",
+    "test:swift": "swiftc -module-cache-path /tmp/rn-foundation-models-module-cache ios/AppleAIErrors.swift ios/StreamingResponseAccumulator.swift tests/StreamingResponseAccumulatorTests.swift -o /tmp/rn-foundation-models-tests && /tmp/rn-foundation-models-tests",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf lib",
     "build": "rm -rf lib && bun typecheck && bob build",

@@ -7,6 +7,17 @@ on:
       - main
 
 jobs:
+  test:
+    name: Boundary Regression Tests
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.12
+      - run: bun install --frozen-lockfile
+      - run: bun run test
+
   lint:
     name: Biome Lint
     runs-on: blacksmith-4vcpu-ubuntu-2404
