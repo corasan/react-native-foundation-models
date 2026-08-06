@@ -1,6 +1,6 @@
 {
   "name": "react-native-foundation-models",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "React Native Nitro module for Apple's Foundation Models (Apple Intelligence). Enables on-device AI with tool calling and streaming responses on iOS 26.0+.",
   "main": "./lib/module/index.js",
   "module": "./lib/module/index.js",
