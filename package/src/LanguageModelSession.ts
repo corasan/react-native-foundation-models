@@ -1,5 +1,6 @@
-import { NitroModules } from 'react-native-nitro-modules'
 import { Platform } from 'react-native'
+import { NitroModules } from 'react-native-nitro-modules'
+import { AppleAIError, parseNativeError } from './errors'
 import type {
   LanguageModelSessionConfig,
   LanguageModelSessionFactory as LanguageModelSessionFactorySpec,
@@ -159,30 +160,95 @@ export class LanguageModelSession {
   constructor(config?: LanguageModelSessionOptions) {
     const availability = checkFoundationModelsAvailability()
     if (!availability.isAvailable) {
-      throw new Error(`Foundation Models is not available: ${availability.message}`)
+      throw new AppleAIError(
+        'MODEL_UNAVAILABLE',
+        `Foundation Models is not available: ${availability.message}`,
+        {
+          operation: 'createSession',
+          availabilityStatus: availability.status,
+        },
+      )
     }
 
-    this.session = LanguageModelSessionFactory.create({
-      instructions: config?.instructions,
-      tools: config?.tools,
-      useCase: config?.useCase,
-      guardrails: config?.guardrails,
-    })
+    try {
+      this.session = LanguageModelSessionFactory.create({
+        instructions: config?.instructions,
+        tools: config?.tools,
+        useCase: config?.useCase,
+        guardrails: config?.guardrails,
+      })
+    } catch (error) {
+      throw parseNativeError(error, {
+        fallbackCode: 'SESSION_INITIALIZATION_ERROR',
+        operation: 'createSession',
+      })
+    }
   }
 
   /**
    * Generates a complete response from the language model and resolves when finished.
    */
-  respond(prompt: string): Promise<string> {
-    return this.session.respond(prompt)
+  async respond(prompt: string): Promise<string> {
+    try {
+      return await this.session.respond(prompt)
+    } catch (error) {
+      throw parseNativeError(error, {
+        fallbackCode: 'SESSION_RESPONSE_ERROR',
+        operation: 'respond',
+      })
+    }
   }
 
   /**
    * Initiates a streaming response from the language model
    * This method starts the AI conversation and streams the response back
    */
-  streamResponse(prompt: string, onChunk: (chunk: string) => void): Promise<string> {
-    return this.session.streamResponse(prompt, onChunk)
+  async streamResponse(
+    prompt: string,
+    onChunk: (chunk: string) => void,
+  ): Promise<string> {
+    let callbackError: unknown
+    let callbackDidFail = false
+
+    const safeOnChunk = (chunk: string) => {
+      if (callbackDidFail) {
+        return
+      }
+
+      try {
+        onChunk(chunk)
+      } catch (error) {
+        // Nitro dispatches void callbacks asynchronously and cannot propagate
+        // their exceptions back to this promise. Capture the first exception so
+        // it cannot escape as an uncaught native C++ runtime error.
+        callbackDidFail = true
+        callbackError = error
+      }
+    }
+
+    try {
+      const response = await this.session.streamResponse(prompt, safeOnChunk)
+
+      if (callbackDidFail) {
+        const callbackCause = parseNativeError(callbackError)
+        throw new AppleAIError(
+          'STREAM_CALLBACK_ERROR',
+          `Streaming callback failed: ${callbackCause.message}`,
+          {
+            operation: 'streamResponse.onChunk',
+            causeCode: callbackCause.code,
+          },
+          { cause: callbackError },
+        )
+      }
+
+      return response
+    } catch (error) {
+      throw parseNativeError(error, {
+        fallbackCode: 'SESSION_STREAMING_ERROR',
+        operation: 'streamResponse',
+      })
+    }
   }
 
   /**
@@ -191,8 +257,15 @@ export class LanguageModelSession {
    * Note: This API is only available on iOS 26.4 or later. On earlier versions
    * the returned promise will reject with an `UNSUPPORTED_PLATFORM` error.
    */
-  tokenCount(prompt: string): Promise<number> {
-    return this.session.tokenCount(prompt)
+  async tokenCount(prompt: string): Promise<number> {
+    try {
+      return await this.session.tokenCount(prompt)
+    } catch (error) {
+      throw parseNativeError(error, {
+        fallbackCode: 'TOKEN_COUNT_ERROR',
+        operation: 'tokenCount',
+      })
+    }
   }
 
   get wasContextReset(): boolean {
