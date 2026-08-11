@@ -25,7 +25,7 @@ type JsonSchema = Record<string, unknown>
  * native code. Anything else is either metadata (dropped) or unsupported
  * (rejected), so the schema the model sees always matches what Zod validates.
  */
-const KEYWORDS = {
+export const KEYWORDS = {
   object: ['type', 'description', 'properties', 'required'],
   array: ['type', 'description', 'items', 'minItems', 'maxItems'],
   string: ['type', 'description', 'enum', 'const'],
@@ -37,7 +37,7 @@ const KEYWORDS = {
 /** Metadata keywords that Zod validates or applies itself; the model never needs them. */
 const DROPPED_KEYWORDS = new Set(['$schema', 'default', 'id', '$id'])
 
-const UNSUPPORTED_HINTS: Record<string, string> = {
+export const UNSUPPORTED_HINTS: Record<string, string> = {
   exclusiveMinimum: 'use an inclusive bound such as .min()/.gte() instead of .gt()',
   exclusiveMaximum: 'use an inclusive bound such as .max()/.lte() instead of .lt()',
   pattern:
@@ -48,12 +48,17 @@ const UNSUPPORTED_HINTS: Record<string, string> = {
   additionalProperties:
     'dynamic keys (z.record) are not supported; declare explicit properties',
   propertyNames: 'dynamic keys (z.record) are not supported; declare explicit properties',
-  anyOf: 'unions are not supported',
-  oneOf: 'unions are not supported',
-  allOf: 'intersections are not supported',
+  anyOf:
+    'unions are not supported; use a single type, or z.enum([...]) for string choices',
+  oneOf:
+    'unions are not supported; use a single type, or z.enum([...]) for string choices',
+  allOf: 'intersections are not supported; flatten into a single object schema',
   not: 'negated schemas are not supported',
   multipleOf: 'multipleOf is not supported; validate in the handler',
 }
+
+const SUPPORTED_TYPES_HINT =
+  'supported types are string, number, integer, boolean, object, and array'
 
 function unsupported(path: string, what: string, hint?: string): SchemaCreationError {
   const suggestion = hint ? ` (${hint})` : ''
@@ -123,7 +128,7 @@ function sanitizeSchema(node: JsonSchema, path: string, isRequired: boolean): Js
 
   const type = schema.type
   if (typeof type !== 'string' || !(type in KEYWORDS)) {
-    throw unsupported(path, `type '${String(type ?? 'unknown')}'`)
+    throw unsupported(path, `type '${String(type ?? 'unknown')}'`, SUPPORTED_TYPES_HINT)
   }
 
   const allowed = KEYWORDS[type as keyof typeof KEYWORDS] as readonly string[]
@@ -152,10 +157,9 @@ function sanitizeSchema(node: JsonSchema, path: string, isRequired: boolean): Js
       const required = Array.isArray(schema.required) ? (schema.required as string[]) : []
       const sanitizedProperties: JsonSchema = {}
       for (const [key, propertySchema] of Object.entries(properties)) {
-        const childPath = path === '' ? key : `${path}.${key}`
         sanitizedProperties[key] = sanitizeSchema(
           propertySchema,
-          childPath,
+          `${path}.${key}`,
           required.includes(key),
         )
       }
@@ -240,7 +244,7 @@ function zodSchemaToJsonSchema(schema: ZodObjectSchema): AnyMap {
     )
   }
 
-  return sanitizeSchema(jsonSchema, '', true) as AnyMap
+  return sanitizeSchema(jsonSchema, 'arguments', true) as AnyMap
 }
 
 /**

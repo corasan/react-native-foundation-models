@@ -8,8 +8,10 @@ import FoundationModels
 @available(iOS 26.0, macOS 26.0, *)
 enum ToolSchemaBuilder {
     /// Keywords the TypeScript side already rejects; rejected here too so
-    /// hand-authored `ToolDefinition`s cannot silently degrade.
-    private static let unsupportedKeywords: Set<String> = [
+    /// hand-authored `ToolDefinition`s cannot silently degrade. Kept in sync
+    /// with tests/fixtures/unsupported-schema-keywords.json (drift-guarded by
+    /// tests on both sides).
+    static let unsupportedKeywords: Set<String> = [
         "anyOf", "oneOf", "allOf", "not", "pattern", "format", "prefixItems",
         "propertyNames", "multipleOf", "exclusiveMinimum", "exclusiveMaximum",
         "$ref", "$defs",
@@ -19,7 +21,7 @@ enum ToolSchemaBuilder {
 
     static func schema(fromArguments document: [String: Any]) throws -> GenerationSchema {
         let root: DynamicGenerationSchema
-        if document["type"] as? String == "object", objectNode(document["properties"]) != nil {
+        if document["type"] as? String == "object" {
             root = try dynamicSchema(from: document, name: "ToolParameters", path: "arguments")
         } else {
             root = try legacySchema(from: document)
@@ -102,8 +104,16 @@ enum ToolSchemaBuilder {
                     "Property '\(path)' is an array without a single element schema"
                 )
             }
+            var itemSchema = try dynamicSchema(from: items, name: "\(path)[]", path: "\(path)[]")
+            // Primitive schemas have no description slot; a one-choice anyOf
+            // wrapper carries the element description into the model contract.
+            if let itemDescription = items["description"] as? String, isPlainPrimitive(items) {
+                itemSchema = DynamicGenerationSchema(
+                    name: "\(path)[]", description: itemDescription, anyOf: [itemSchema]
+                )
+            }
             return DynamicGenerationSchema(
-                arrayOf: try dynamicSchema(from: items, name: "\(path)[]", path: "\(path)[]"),
+                arrayOf: itemSchema,
                 minimumElements: intBound(node["minItems"]),
                 maximumElements: intBound(node["maxItems"])
             )
@@ -128,24 +138,16 @@ enum ToolSchemaBuilder {
             return DynamicGenerationSchema(type: String.self)
 
         case "integer":
-            var guides: [GenerationGuide<Int>] = []
-            switch (intBound(node["minimum"]), intBound(node["maximum"])) {
-            case (let minimum?, let maximum?): guides.append(.range(minimum...maximum))
-            case (let minimum?, nil): guides.append(.minimum(minimum))
-            case (nil, let maximum?): guides.append(.maximum(maximum))
-            case (nil, nil): break
-            }
-            return DynamicGenerationSchema(type: Int.self, guides: guides)
+            return DynamicGenerationSchema(type: Int.self, guides: rangeGuides(
+                minimum: intBound(node["minimum"]), maximum: intBound(node["maximum"]),
+                min: { .minimum($0) }, max: { .maximum($0) }, range: { .range($0) }
+            ))
 
         case "number":
-            var guides: [GenerationGuide<Double>] = []
-            switch (doubleBound(node["minimum"]), doubleBound(node["maximum"])) {
-            case (let minimum?, let maximum?): guides.append(.range(minimum...maximum))
-            case (let minimum?, nil): guides.append(.minimum(minimum))
-            case (nil, let maximum?): guides.append(.maximum(maximum))
-            case (nil, nil): break
-            }
-            return DynamicGenerationSchema(type: Double.self, guides: guides)
+            return DynamicGenerationSchema(type: Double.self, guides: rangeGuides(
+                minimum: doubleBound(node["minimum"]), maximum: doubleBound(node["maximum"]),
+                min: { .minimum($0) }, max: { .maximum($0) }, range: { .range($0) }
+            ))
 
         case "boolean":
             return DynamicGenerationSchema(type: Bool.self)
@@ -187,6 +189,33 @@ enum ToolSchemaBuilder {
         return DynamicGenerationSchema(name: "ToolParameters", properties: properties)
     }
 
+    /// True for schema nodes that map to `DynamicGenerationSchema(type:)`,
+    /// which has no description parameter of its own.
+    private static func isPlainPrimitive(_ node: [String: Any]) -> Bool {
+        switch node["type"] as? String {
+        case "number", "integer", "boolean":
+            return true
+        case "string":
+            return node["enum"] == nil && node["const"] == nil
+        default:
+            return false
+        }
+    }
+
+    private static func rangeGuides<T>(
+        minimum: T?, maximum: T?,
+        min: (T) -> GenerationGuide<T>,
+        max: (T) -> GenerationGuide<T>,
+        range: (ClosedRange<T>) -> GenerationGuide<T>
+    ) -> [GenerationGuide<T>] {
+        switch (minimum, maximum) {
+        case (let lower?, let upper?): return [range(lower...upper)]
+        case (let lower?, nil): return [min(lower)]
+        case (nil, let upper?): return [max(upper)]
+        case (nil, nil): return []
+        }
+    }
+
     private static func intBound(_ value: Any?) -> Int? {
         switch value {
         case let intValue as Int: return intValue
@@ -215,12 +244,18 @@ enum ToolSchemaBuilder {
                 "Expected tool arguments to be an object, got \(content.kind)"
             )
         }
-        var result: [String: Any?] = [:]
+        return structureValues(properties, orderedKeys: orderedKeys)
+    }
+
+    private static func structureValues(
+        _ properties: [String: GeneratedContent], orderedKeys: [String]
+    ) -> [String: Any?] {
+        var object: [String: Any?] = [:]
         for key in orderedKeys {
             guard let property = properties[key] else { continue }
-            result[key] = anyValue(from: property)
+            object[key] = anyValue(from: property)
         }
-        return result
+        return object
     }
 
     private static func anyValue(from content: GeneratedContent) -> Any? {
@@ -236,12 +271,7 @@ enum ToolSchemaBuilder {
         case .array(let elements):
             return elements.map { anyValue(from: $0) }
         case .structure(let properties, let orderedKeys):
-            var object: [String: Any?] = [:]
-            for key in orderedKeys {
-                guard let property = properties[key] else { continue }
-                object[key] = anyValue(from: property)
-            }
-            return object
+            return structureValues(properties, orderedKeys: orderedKeys)
         @unknown default:
             return nil
         }
@@ -250,12 +280,7 @@ enum ToolSchemaBuilder {
     /// Encodes a structured tool result. Every field is preserved;
     /// unrepresentable values fail loudly instead of being dropped.
     static func generatedContent(fromResult result: [String: Any?]) throws -> GeneratedContent {
-        let orderedKeys = Array(result.keys)
-        var properties: [String: GeneratedContent] = [:]
-        for key in orderedKeys {
-            properties[key] = try GeneratedContent(kind: kind(fromValue: result[key] ?? nil, path: key))
-        }
-        return GeneratedContent(kind: .structure(properties: properties, orderedKeys: orderedKeys))
+        return GeneratedContent(kind: try kind(fromValue: result, path: ""))
     }
 
     private static func kind(fromValue value: Any?, path: String) throws -> GeneratedContent.Kind {
@@ -278,8 +303,9 @@ enum ToolSchemaBuilder {
             let orderedKeys = Array(dictionary.keys)
             var properties: [String: GeneratedContent] = [:]
             for key in orderedKeys {
+                let childPath = path.isEmpty ? key : "\(path).\(key)"
                 properties[key] = try GeneratedContent(
-                    kind: kind(fromValue: dictionary[key] ?? nil, path: "\(path).\(key)")
+                    kind: kind(fromValue: dictionary[key] ?? nil, path: childPath)
                 )
             }
             return .structure(properties: properties, orderedKeys: orderedKeys)

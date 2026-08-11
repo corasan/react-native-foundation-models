@@ -1,6 +1,14 @@
 export type WeatherUnits = 'celsius' | 'fahrenheit'
 
-export function weatherResult(data?: any, units: WeatherUnits = 'fahrenheit') {
+export interface OpenWeatherData {
+  main?: { temp: number; humidity: number }
+  weather?: Array<{ description: string }>
+}
+
+export function weatherResult(
+  data?: OpenWeatherData,
+  units: WeatherUnits = 'fahrenheit',
+) {
   if (!data?.main) {
     return {
       available: false,

@@ -10,7 +10,7 @@
   "author": "Henry Paulino <me@henrypl.com>",
   "scripts": {
     "test": "bun test tests/*.test.ts",
-    "test:swift": "swiftc -module-cache-path /tmp/rn-foundation-models-module-cache ios/AppleAIErrors.swift ios/StreamingResponseAccumulator.swift tests/StreamingResponseAccumulatorTests.swift -o /tmp/rn-foundation-models-tests && /tmp/rn-foundation-models-tests && swiftc -parse-as-library -module-cache-path /tmp/rn-foundation-models-module-cache ios/AppleAIErrors.swift ios/ToolSchemaBuilder.swift tests/ToolSchemaBuilderTests.swift -o /tmp/rn-foundation-models-schema-tests && /tmp/rn-foundation-models-schema-tests",
+    "test:swift": "bash scripts/test-swift.sh",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf lib",
     "build": "rm -rf lib && bun typecheck && bob build",

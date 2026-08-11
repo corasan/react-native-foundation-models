@@ -254,6 +254,8 @@ Unsupported features fail at `createTool` time with a `SCHEMA_CREATION_ERROR` th
 
 Tool arguments and results round-trip with full structure: nested objects, arrays, and `null` values are preserved in both directions.
 
+If you construct a `ToolDefinition` by hand instead of using `createTool`, the `arguments` field accepts either a JSON Schema document (as described above) or a legacy flat map of `{ propertyName: "string" | "number" | "integer" | "boolean" }`. Unknown type names in the flat map fail with a `SCHEMA_CREATION_ERROR`.
+
 ### `isAppleAIError(error)`
 
 Type guard to check if an error is an AppleAIError.

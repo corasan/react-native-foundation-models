@@ -72,8 +72,11 @@ struct ToolSchemaBuilderTests {
             return
         }
         try schemaContractTests()
+        try arrayItemDescriptionTests()
+        try emptyObjectSchemaTests()
         try legacyFormatTests()
         rejectionTests()
+        try keywordFixtureTests()
         try valueDecodingTests()
         try valueEncodingTests()
         print("Swift tool schema builder tests passed")
@@ -162,6 +165,46 @@ struct ToolSchemaBuilderTests {
         let optionalEncoded = try encodedSchema(optionalDoc)
         precondition(optionalEncoded["required"] as? [String] == ["required"],
                      "Optional field became required")
+    }
+
+    @available(iOS 26.0, macOS 26.0, *)
+    static func arrayItemDescriptionTests() throws {
+        let encoded = try encodedSchema([
+            "type": "object",
+            "properties": [
+                "tags": [
+                    "type": "array",
+                    "items": ["type": "string", "description": "A tag name"],
+                ],
+            ],
+            "required": ["tags"],
+        ])
+        let tags = property("tags", of: encoded)
+        guard let itemsNode = tags["items"] as? [String: Any] else {
+            preconditionFailure("Array items missing: \(tags)")
+        }
+        let items = resolve(itemsNode, in: encoded)
+        precondition(items["description"] as? String == "A tag name",
+                     "Array item description was dropped: \(items)")
+    }
+
+    @available(iOS 26.0, macOS 26.0, *)
+    static func emptyObjectSchemaTests() throws {
+        // A JSON Schema document without properties must not fall into the
+        // legacy flat-format path and produce a misleading error.
+        let encoded = try encodedSchema(["type": "object"])
+        precondition(encoded["type"] as? String == "object")
+        let properties = encoded["properties"] as? [String: Any] ?? [:]
+        precondition(properties.isEmpty, "Expected an empty schema: \(encoded)")
+    }
+
+    @available(iOS 26.0, macOS 26.0, *)
+    static func keywordFixtureTests() throws {
+        let url = URL(fileURLWithPath: "tests/fixtures/unsupported-schema-keywords.json")
+        let fixture = try JSONDecoder().decode([String].self, from: Data(contentsOf: url))
+        let expected = ToolSchemaBuilder.unsupportedKeywords.union(["additionalProperties"])
+        precondition(Set(fixture) == expected,
+                     "Keyword fixture drifted from Swift list: fixture=\(fixture.sorted()) swift=\(expected.sorted())")
     }
 
     @available(iOS 26.0, macOS 26.0, *)

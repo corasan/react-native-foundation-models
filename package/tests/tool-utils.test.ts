@@ -1,7 +1,9 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, test } from 'bun:test'
 import { z } from 'zod'
 import { ArgumentParsingError, SchemaCreationError } from '../src/errors'
-import { createTool } from '../src/tool-utils'
+import { createTool, KEYWORDS, UNSUPPORTED_HINTS } from '../src/tool-utils'
 
 const makeTool = <T extends z.ZodObject<any>>(
   args: T,
@@ -229,6 +231,46 @@ describe('createTool schema rejection', () => {
       z.object({ tags: z.array(z.string().nullish()) }),
       /tags\[\].*element/s,
     )
+  })
+
+  test('gives a supported-types hint for unknown schema types', () => {
+    expectRejection(z.object({ x: z.any() }), /x.*supported types/is)
+  })
+
+  test('gives usable guidance for unions', () => {
+    expectRejection(
+      z.object({ id: z.union([z.string(), z.number()]) }),
+      /id.*union.*(single|enum)/is,
+    )
+  })
+
+  test('names the root as arguments for root-level violations', () => {
+    expectRejection(
+      z.object({ a: z.string() }).catchall(z.string()),
+      /arguments.*additionalProperties/s,
+    )
+  })
+})
+
+describe('rejection keyword contract fixture', () => {
+  const fixture: string[] = JSON.parse(
+    readFileSync(
+      join(import.meta.dir, 'fixtures/unsupported-schema-keywords.json'),
+      'utf8',
+    ),
+  )
+
+  test('every hinted keyword is in the shared fixture', () => {
+    for (const keyword of Object.keys(UNSUPPORTED_HINTS)) {
+      expect(fixture).toContain(keyword)
+    }
+  })
+
+  test('no fixture keyword is whitelisted for any type', () => {
+    const whitelisted = new Set(Object.values(KEYWORDS).flat())
+    for (const keyword of fixture) {
+      expect(whitelisted.has(keyword)).toBe(false)
+    }
   })
 })
 
