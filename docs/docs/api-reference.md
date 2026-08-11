@@ -241,6 +241,19 @@ function createTool<T extends ZodObjectSchema>(definition: {
 }): ToolDefinition
 ```
 
+The Zod schema you pass is the exact contract the model sees. Supported schema features:
+
+- `z.string()`, `z.number()`, `z.number().int()`, `z.boolean()`
+- `z.object()` and `z.array()`, nested to any depth
+- `.optional()`, `.nullish()`, and `.default()` — the field becomes optional for the model
+- `z.enum([...])` and string `z.literal()`
+- Inclusive bounds: `.min()` / `.max()` on numbers and arrays
+- `.describe()` on any field
+
+Unsupported features fail at `createTool` time with a `SCHEMA_CREATION_ERROR` that names the property and a supported alternative. Rejected: bare `.nullable()` on a required field (the model cannot emit `null`; use `.nullish()`), unions, records, tuples, intersections, non-string enums and literals, regex patterns and string formats (`.email()` and similar), exclusive bounds (`.gt()` / `.lt()`), and `.multipleOf()`.
+
+Tool arguments and results round-trip with full structure: nested objects, arrays, and `null` values are preserved in both directions.
+
 ### `isAppleAIError(error)`
 
 Type guard to check if an error is an AppleAIError.
