@@ -1,0 +1,16 @@
+[
+  "$defs",
+  "$ref",
+  "additionalProperties",
+  "allOf",
+  "anyOf",
+  "exclusiveMaximum",
+  "exclusiveMinimum",
+  "format",
+  "multipleOf",
+  "not",
+  "oneOf",
+  "pattern",
+  "prefixItems",
+  "propertyNames"
+]

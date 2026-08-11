@@ -1,3 +1,4 @@
+import Foundation
 import NitroModules
 import FoundationModels
 
@@ -7,166 +8,120 @@ struct HybridTool: Tool, @unchecked Sendable {
     var description: String
     var parameters: GenerationSchema
     var handler: (AnyMap) -> Promise<Promise<AnyMap>>
-    
+
     @available(iOS 26.0, *)
     init(name: String, description: String, parameters: AnyMap, handler: @escaping (AnyMap) -> Promise<Promise<AnyMap>>) throws {
         self.name = name
         self.description = description
         self.handler = handler
         do {
-            self.parameters = try Self.createGenerationSchema(from: parameters)
+            self.parameters = try ToolSchemaBuilder.schema(
+                fromArguments: Self.schemaDictionary(from: parameters)
+            )
         } catch {
             throw AppleAIError.schemaCreationError("Failed to create schema for tool '\(name)': \(error.localizedDescription)")
         }
     }
-    
+
     @available(iOS 26.0, *)
     func call(arguments: GeneratedContent) async throws -> some Generable {
         do {
-            let argumentsMap = Self.convertGeneratedContentToAnyMap(arguments)
+            let argumentsMap = try Self.anyMap(fromArguments: ToolSchemaBuilder.value(from: arguments))
             let resultPromise = handler(argumentsMap)
-            
+
             let result: Promise<AnyMap>
             do {
                 result = try await resultPromise.await()
             } catch {
                 throw AppleAIError.toolExecutionError(name, error)
             }
-            
+
             let resultMap: AnyMap
             do {
                 resultMap = try await result.await()
             } catch {
                 throw AppleAIError.toolExecutionError(name, error)
             }
-            
-            return Self.convertAnyMapToGeneratedContent(resultMap)
+
+            return try ToolSchemaBuilder.generatedContent(
+                fromResult: Self.resultDictionary(from: resultMap)
+            )
         } catch let error as AppleAIError {
             throw error
         } catch {
             throw AppleAIError.toolCallError(error)
         }
     }
-    
-    // MARK: - Helper Methods
-    
-    @available(iOS 26.0, *)
-    private static func createGenerationSchema(from anyMap: AnyMap) throws -> GenerationSchema {
-        let keys = anyMap.getAllKeys()
-        var properties: [DynamicGenerationSchema.Property] = []
-        
-        for key in keys {
-            let schema = try createDynamicSchema(from: anyMap, key: key)
-            properties.append(DynamicGenerationSchema.Property(name: key, schema: schema))
-        }
-        
-        let dynamicSchema = DynamicGenerationSchema(
-            name: "ToolParameters",
-            properties: properties
-        )
-        
-        return try GenerationSchema(root: dynamicSchema, dependencies: [])
-    }
-    
-    
-    @available(iOS 26.0, *)
-    private static func createDynamicSchema(from anyMap: AnyMap, key: String) throws -> DynamicGenerationSchema {
-        if anyMap.isString(key: key) {
-            let typeString = anyMap.getString(key: key)
-            return createSchemaFromTypeString(typeString)
-        } else if anyMap.isDouble(key: key) {
-            return DynamicGenerationSchema(type: Double.self)
-        } else if anyMap.isBool(key: key) {
-            return DynamicGenerationSchema(type: Bool.self)
-        } else {
-            return DynamicGenerationSchema(type: String.self)
-        }
-    }
-    
-    @available(iOS 26.0, *)
-    private static func createSchemaFromTypeString(_ typeString: String) -> DynamicGenerationSchema {
-        switch typeString.lowercased() {
-        case "string":
-            return DynamicGenerationSchema(type: String.self)
-        case "number", "double", "int", "float":
-            return DynamicGenerationSchema(type: Double.self)
-        case "boolean", "bool":
-            return DynamicGenerationSchema(type: Bool.self)
-        default:
-            return DynamicGenerationSchema(type: String.self)
-        }
-    }
-    
-    @available(iOS 26.0, *)
-    private static func convertGeneratedContentToAnyMap(_ content: GeneratedContent) -> AnyMap {
-        let anyMap = AnyMap()
-        let jsonString = content.jsonString
-        
-        guard !jsonString.isEmpty else {
-            return anyMap
-        }
-        
-        guard let jsonData = jsonString.data(using: .utf8) else {
-            return anyMap
-        }
-        
-        do {
-            guard let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
-                return anyMap
-            }
-            
-            for (key, value) in jsonObject {
-                switch value {
-                case let stringValue as String:
-                    anyMap.setString(key: key, value: stringValue)
-                case let doubleValue as Double:
-                    anyMap.setDouble(key: key, value: doubleValue)
-                case let intValue as Int:
-                    anyMap.setDouble(key: key, value: Double(intValue))
-                case let boolValue as Bool:
-                    anyMap.setBoolean(key: key, value: boolValue)
-                case is NSNull:
-                    anyMap.setString(key: key, value: "")
-                default:
-                    anyMap.setString(key: key, value: String(describing: value))
-                }
-            }
-        } catch {
-            // Log parsing error but return empty map to avoid crashing
-            print("Warning: Failed to parse GeneratedContent JSON: \(error.localizedDescription)")
-        }
-        
-        return anyMap
-    }
-    
-    @available(iOS 26.0, *)
-    private static func convertAnyMapToGeneratedContent(_ anyMap: AnyMap) -> GeneratedContent {
-        let keys = anyMap.getAllKeys()
-        var keyValuePairs: [(String, any ConvertibleToGeneratedContent)] = []
-        
-        for key in keys {
-            if anyMap.isString(key: key) {
-                keyValuePairs.append((key, anyMap.getString(key: key)))
-            } else if anyMap.isDouble(key: key) {
-                keyValuePairs.append((key, anyMap.getDouble(key: key)))
-            } else if anyMap.isBool(key: key) {
-                keyValuePairs.append((key, anyMap.getBoolean(key: key)))
-            }
-        }
-        
-        let kvp = unsafeBitCast(
-            DynamicKeyValuePairs(_elements: keyValuePairs),
-            to: KeyValuePairs<String, any ConvertibleToGeneratedContent>.self
-        )
-        
-        return GeneratedContent(properties: kvp)
-    }
-}
 
-struct DynamicKeyValuePairs<K, V> {
-    let _elements: [(K, V)]
-    
-    init(_elements: [(K, V)]) {
-        self._elements = _elements
+    // MARK: - AnyMap bridging
+
+    @available(iOS 26.0, *)
+    private static func schemaDictionary(from anyMap: AnyMap) -> [String: Any] {
+        var dictionary: [String: Any] = [:]
+        for key in anyMap.getAllKeys() {
+            dictionary[key] = anyMap.getAny(key: key) ?? NSNull()
+        }
+        return dictionary
+    }
+
+    @available(iOS 26.0, *)
+    private static func resultDictionary(from anyMap: AnyMap) -> [String: Any?] {
+        var dictionary: [String: Any?] = [:]
+        for key in anyMap.getAllKeys() {
+            dictionary[key] = anyMap.getAny(key: key)
+        }
+        return dictionary
+    }
+
+    @available(iOS 26.0, *)
+    private static func anyMap(fromArguments arguments: [String: Any?]) throws -> AnyMap {
+        let map = AnyMap()
+        for (key, value) in arguments {
+            switch try anyValue(from: value, path: key) {
+            case .null:
+                map.setNull(key: key)
+            case .bool(let boolValue):
+                map.setBoolean(key: key, value: boolValue)
+            case .number(let doubleValue):
+                map.setDouble(key: key, value: doubleValue)
+            case .int64(let int64Value):
+                map.setInt64(key: key, value: int64Value)
+            case .string(let stringValue):
+                map.setString(key: key, value: stringValue)
+            case .array(let elements):
+                map.setArray(key: key, value: elements)
+            case .object(let object):
+                map.setObject(key: key, value: object)
+            }
+        }
+        return map
+    }
+
+    @available(iOS 26.0, *)
+    private static func anyValue(from value: Any?, path: String) throws -> AnyValue {
+        switch value {
+        case nil, is NSNull:
+            return .null
+        case let boolValue as Bool:
+            return .bool(boolValue)
+        case let doubleValue as Double:
+            return .number(doubleValue)
+        case let stringValue as String:
+            return .string(stringValue)
+        case let elements as [Any?]:
+            return .array(try elements.enumerated().map { index, element in
+                try anyValue(from: element, path: "\(path)[\(index)]")
+            })
+        case let object as [String: Any?]:
+            var converted: [String: AnyValue] = [:]
+            for (childKey, childValue) in object {
+                converted[childKey] = try anyValue(from: childValue, path: "\(path).\(childKey)")
+            }
+            return .object(converted)
+        default:
+            throw AppleAIError.argumentParsingError(
+                "Tool argument '\(path)' has unsupported value of type \(type(of: value ?? "nil"))"
+            )
+        }
     }
 }
