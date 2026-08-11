@@ -10,7 +10,7 @@ import { getTokenMetrics, type TokenMetrics } from '@/utils/tokenMetrics'
 import { weatherResult } from '@/utils/weatherResult'
 
 const WEATHER_API_KEY = process.env.EXPO_PUBLIC_WEATHER_API_KEY
-const BASE_URL = 'https://api.openweathermap.org/data/2.5/weather?units=imperial'
+const BASE_URL = 'https://api.openweathermap.org/data/2.5/weather'
 const options = {
   method: 'GET',
   headers: { accept: 'application/json', 'accept-encoding': 'deflate, gzip, br' },
@@ -20,11 +20,13 @@ const weatherTool = createTool({
   name: 'weather_tool',
   description: 'A weather tool that can get current weather information for any city.',
   arguments: z.object({
-    city: z.string(),
+    city: z.string().describe('The city to get the weather for'),
+    units: z.enum(['celsius', 'fahrenheit']).default('fahrenheit'),
   }),
   handler: async args => {
     try {
-      const url = `${BASE_URL}&q=${args.city}&APPID=${WEATHER_API_KEY}`
+      const apiUnits = args.units === 'celsius' ? 'metric' : 'imperial'
+      const url = `${BASE_URL}?units=${apiUnits}&q=${args.city}&APPID=${WEATHER_API_KEY}`
       const res = await fetch(url, options)
       const result = await res.json()
 
@@ -32,10 +34,10 @@ const weatherTool = createTool({
         throw new Error(`Invalid API response structure: ${JSON.stringify(result)}`)
       }
 
-      return weatherResult(result.main)
+      return weatherResult(result, args.units)
     } catch (error) {
       console.error('Weather tool error:', error)
-      return weatherResult()
+      return weatherResult(undefined, args.units)
     }
   },
 })

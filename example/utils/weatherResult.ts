@@ -1,17 +1,18 @@
-export function weatherResult(data?: any) {
-  const units = 'imperial'
-  if (!data) {
+export type WeatherUnits = 'celsius' | 'fahrenheit'
+
+export function weatherResult(data?: any, units: WeatherUnits = 'fahrenheit') {
+  if (!data?.main) {
     return {
-      temperature: 0,
-      humidity: 0,
-      precipitation: 0,
+      available: false,
+      conditions: 'unknown',
+      readings: { temperature: 0, humidity: 0 },
       units,
     }
   }
   return {
-    temperature: data.temp,
-    humidity: data.humidity,
-    precipitation: data.weather?.[0]?.description || 'Unknown',
+    available: true,
+    conditions: data.weather?.[0]?.description || 'unknown',
+    readings: { temperature: data.main.temp, humidity: data.main.humidity },
     units,
   }
 }

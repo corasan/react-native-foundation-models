@@ -32,7 +32,7 @@ const weatherTool = createTool({
         throw new Error(`Invalid API response structure: ${JSON.stringify(result)}`)
       }
 
-      return weatherResult(result.main)
+      return weatherResult(result)
     } catch (error) {
       console.error('Weather tool error:', error)
       return weatherResult()
